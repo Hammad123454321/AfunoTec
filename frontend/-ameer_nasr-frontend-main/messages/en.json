@@ -1,0 +1,36 @@
+{
+  "BestDeals": {
+    "title": "BEST DEALS & <span>PROMOTIONS</span>",
+    "subtitle": "Find best deals on Hotels, Villas, and much more..."
+  },
+
+  "FlashOffer": {
+    "title": "Preskil Island Resort Mauritius",
+    "description1": "Half Board/ All Inclusive + Complimentary",
+    "description2": "Activities + Kids and Teens Club",
+    "asFrom": "As From",
+    "currency": "Ar"
+  },
+
+  "HFlashOffer": {
+    "titlePart1": "Flash <span>Offers</span>"
+  },
+
+  "HotelApartments": {
+    "sectionTitle": "Hotels Apartments and <span>Lodge</span>",
+    "asFrom": "As From",
+    "currency": "Ar",
+    "description1": "Half Board/ All Inclusive + Complimentary",
+    "description2": "Activities + Kids and Teens Club",
+    "title": "Preskil Island Resort Mauritius"
+  },
+
+  "Activities": {
+    "sectionTitle": " <span>Activities Deals </span>",
+    "asFrom": "As From",
+    "currency": "Ar",
+    "description1": "Half Board/ All Inclusive + Complimentary",
+    "description2": "Activities + Kids and Teens Club",
+    "title": "Preskil Island Resort Mauritius"
+  }
+}

@@ -1,0 +1,14 @@
+/* Google Translate hide fix */
+.VIpgJd-ZVi9od-aZ2wEe-wOHMyf,
+.VIpgJd-ZVi9od-aZ2wEe {
+  @apply opacity-0 pointer-events-none;
+}
+.skiptranslate iframe,
+.goog-te-banner-frame,
+.goog-te-menu-frame {
+  @apply hidden;
+}
+
+font.VIpgJd—yAWNEb-VIpgJd-fmcmS-sn54Q {
+  background-color: transparent !important;
+}

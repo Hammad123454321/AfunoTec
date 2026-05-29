@@ -1,0 +1,845 @@
+// =============================================================================
+//  ameer_nasr backend — Prisma schema
+//  Database: PostgreSQL 16
+//  Conventions:
+//   - Soft delete via `deletedAt` (DateTime?) on user-facing entities.
+//   - Monetary values stored as Decimal(18, 2) with explicit currency.
+//   - Timestamps in UTC. Use UTC at app boundary; localize on client.
+//   - JSON columns are used for low-cardinality structured payloads
+//     (translations, guest manifests, provider raw payloads).
+// =============================================================================
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = []
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// -----------------------------------------------------------------------------
+//  Enums
+// -----------------------------------------------------------------------------
+
+enum UserRole {
+  ADMIN
+  MANAGER
+  AGENT
+  INFLUENCER
+  SERVICE_PROVIDER
+  CUSTOMER
+}
+
+enum ServiceStatus {
+  DRAFT
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+enum CategoryType {
+  STAY            // hotels, apartments, villas, lodges
+  THING_TO_DO     // activities, experiences
+  TOUR
+  TRAVEL          // multi-day packages
+  TRANSPORTATION  // transfers, rentals
+  NOSY_BE         // dedicated Nosy Be category
+  CORPORATE
+  CULTURE
+  EVENT
+  WORKPLACE
+  CO_WORKING
+}
+
+enum DiscountType {
+  FIXED
+  PERCENTAGE
+}
+
+enum CommissionType {
+  FIXED
+  PERCENTAGE
+}
+
+enum DiscountBadge {
+  LIMITED_OFFER
+  LOW_ROOM
+  MANY_VIEWING_NOW
+  SAVE_PERCENT
+  SAVE_VALUE
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  REFUNDED
+  COMPLETED
+  EXPIRED
+}
+
+enum PaymentMethod {
+  MVOLA
+  AIRTEL_MONEY
+  ORANGE_MONEY
+  CARD
+  GIFT_CARD
+  BANK_TRANSFER
+}
+
+enum PaymentStatus {
+  INITIATED
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+  CHARGEBACK
+}
+
+enum OtpPurpose {
+  EMAIL_VERIFY
+  PASSWORD_RESET
+  TWO_FACTOR
+  PHONE_VERIFY
+}
+
+enum PromoCodeType {
+  PERCENT
+  FIXED
+}
+
+enum AdPlacement {
+  HOME_BANNER_1
+  HOME_BANNER_2
+  CATEGORY_BANNER_1
+  CATEGORY_BANNER_2
+  DETAIL_BANNER
+}
+
+enum ChatRoomType {
+  SUPPORT
+  PROVIDER_CUSTOMER
+  BOT
+}
+
+// -----------------------------------------------------------------------------
+//  Auth & identity
+// -----------------------------------------------------------------------------
+
+model User {
+  id                String    @id @default(cuid())
+  email             String    @unique
+  emailVerifiedAt   DateTime?
+  phone             String?   @unique
+  phoneVerifiedAt   DateTime?
+  passwordHash      String
+  name              String
+  country           String?
+  profileUrl        String?
+  role              UserRole  @default(CUSTOMER)
+  isActive          Boolean   @default(true)
+  isTwoFactorEnabled Boolean  @default(false)
+  failedLoginCount  Int       @default(0)
+  lockedUntil       DateTime?
+  lastLoginAt       DateTime?
+  lastLoginIp       String?
+  preferredLocale   String    @default("en") // en | fr | mg
+  preferredCurrency String    @default("MGA") // MGA | USD | EUR
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  deletedAt         DateTime?
+
+  // Relations
+  customerProfile        CustomerProfile?
+  serviceProviderProfile ServiceProviderProfile?
+  bookingsAsCustomer     Booking[]              @relation("BookingCustomer")
+  reviewsAuthored        Review[]               @relation("ReviewAuthor")
+  refreshTokens          RefreshToken[]
+  otpTokens              OtpToken[]
+  chatMessages           ChatMessage[]
+  chatRoomMemberships    ChatRoomMember[]
+  auditLogs              AuditLog[]             @relation("AuditActor")
+  wishItems              WishlistItem[]
+  cart                   Cart?
+  payments               Payment[]
+  uploadedFiles          FileObject[]
+  promoCodeRedemptions   PromoCodeRedemption[]
+  giftCardsIssued        GiftCard[]             @relation("GiftCardIssuedBy")
+  giftCardsOwned         GiftCard[]             @relation("GiftCardOwnedBy")
+
+  @@index([role])
+  @@index([deletedAt])
+  @@map("users")
+}
+
+model CustomerProfile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dateOfBirth DateTime?
+  nationality String?
+  address     Json?
+  loyaltyTier String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("customer_profiles")
+}
+
+model ServiceProviderProfile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  businessName    String
+  legalName       String?
+  taxId           String?
+  description     String?
+  websiteUrl      String?
+  logoUrl         String?
+  payoutMethod    Json?    // bank details / mobile money number — encrypted at app layer
+  commissionRate  Decimal? @db.Decimal(5, 2) // optional override of global commission %
+  isVerified      Boolean  @default(false)
+  verifiedAt      DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  services Service[]
+
+  @@map("service_provider_profiles")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  userAgent String?
+  ip        String?
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+model OtpToken {
+  id         String     @id @default(cuid())
+  userId     String?
+  user       User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  identifier String     // email or phone (when user not yet created)
+  purpose    OtpPurpose
+  codeHash   String
+  attempts   Int        @default(0)
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime   @default(now())
+
+  @@index([identifier, purpose])
+  @@map("otp_tokens")
+}
+
+// -----------------------------------------------------------------------------
+//  Catalog: categories, tags, services
+// -----------------------------------------------------------------------------
+
+model Category {
+  id           String       @id @default(cuid())
+  slug         String       @unique
+  name         String
+  type         CategoryType
+  iconName     String?
+  imageUrl     String?
+  sortOrder    Int          @default(0)
+  isActive     Boolean      @default(true)
+  translations Json?        // { en: {name, desc}, fr: {...}, mg: {...} }
+  parentId     String?
+  parent       Category?    @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children     Category[]   @relation("CategoryHierarchy")
+  services     Service[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@index([type, isActive])
+  @@map("categories")
+}
+
+model Tag {
+  id           String        @id @default(cuid())
+  slug         String        @unique
+  name         String
+  translations Json?
+  services     ServiceTag[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@map("tags")
+}
+
+model ServiceTag {
+  serviceId String
+  tagId     String
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([serviceId, tagId])
+  @@map("service_tags")
+}
+
+model Service {
+  id           String        @id @default(cuid())
+  slug         String        @unique
+  providerId   String
+  provider     ServiceProviderProfile @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  categoryId   String
+  category     Category      @relation(fields: [categoryId], references: [id])
+  name         String
+  title        String
+  shortSummary String?       @db.Text
+  description  String?       @db.Text
+  duration     String?       // e.g. "3 days", "2 hours"
+  location     String?       // region: North | South | Center | East | West
+  city         String?
+  address      String?
+  latitude     Decimal?      @db.Decimal(10, 6)
+  longitude    Decimal?      @db.Decimal(10, 6)
+  basePrice    Decimal       @db.Decimal(18, 2)
+  currency     String        @default("MGA") // ISO 4217
+  priceUnit    String        @default("per_night") // per_night | per_person | per_trip | per_hour
+  commissionType  CommissionType @default(PERCENTAGE)
+  commissionValue Decimal     @db.Decimal(10, 2) @default(0)
+  status       ServiceStatus @default(DRAFT)
+  rating       Decimal?      @db.Decimal(3, 2)  // 0.00 - 5.00 cached
+  reviewCount  Int           @default(0)
+  viewCount    Int           @default(0)
+  contactInfo  Json?         // { ownerName, phoneNumber, emailAddress }
+  translations Json?         // {en:{...}, fr:{...}, mg:{...}}
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  deletedAt    DateTime?
+
+  images           ServiceImage[]
+  detailPoints     ServiceDetailPoint[]
+  packageSummary   ServicePackageItem[]   @relation("PackageSummary")
+  packageConditions ServicePackageItem[]  @relation("PackageConditions")
+  whyStayHere      ServicePackageItem[]   @relation("WhyStayHere")
+  addOns           ServiceAddOn[]
+  rooms            ServiceRoom[]
+  discounts        ServiceDiscount[]
+  availabilities   ServiceAvailability[]
+  reviews          Review[]
+  bookings         Booking[]
+  tags             ServiceTag[]
+  wishItems        WishlistItem[]
+  cartItems        CartItem[]
+
+  @@index([categoryId, status, deletedAt])
+  @@index([providerId])
+  @@index([location, city])
+  @@map("services")
+}
+
+model ServiceImage {
+  id        String   @id @default(cuid())
+  serviceId String
+  service   Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  url       String
+  alt       String?
+  sortOrder Int      @default(0)
+  isPrimary Boolean  @default(false)
+  width     Int?
+  height    Int?
+  createdAt DateTime @default(now())
+
+  @@index([serviceId])
+  @@map("service_images")
+}
+
+model ServiceDetailPoint {
+  id          String   @id @default(cuid())
+  serviceId   String
+  service     Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  title       String
+  description String?  @db.Text
+  sortOrder   Int      @default(0)
+
+  @@index([serviceId])
+  @@map("service_detail_points")
+}
+
+/** Reuses one table for package summary / conditions / why-stay-here via discriminator relation. */
+model ServicePackageItem {
+  id                  String   @id @default(cuid())
+  title               String
+  description         String?  @db.Text
+  sortOrder           Int      @default(0)
+
+  summaryServiceId    String?
+  summaryService      Service? @relation("PackageSummary", fields: [summaryServiceId], references: [id], onDelete: Cascade)
+  conditionsServiceId String?
+  conditionsService   Service? @relation("PackageConditions", fields: [conditionsServiceId], references: [id], onDelete: Cascade)
+  whyStayHereServiceId String?
+  whyStayHereService  Service? @relation("WhyStayHere", fields: [whyStayHereServiceId], references: [id], onDelete: Cascade)
+
+  @@map("service_package_items")
+}
+
+model ServiceAddOn {
+  id        String   @id @default(cuid())
+  serviceId String
+  service   Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  title     String
+  price     Decimal  @db.Decimal(18, 2)
+  currency  String   @default("MGA")
+  isActive  Boolean  @default(true)
+
+  @@index([serviceId])
+  @@map("service_addons")
+}
+
+model ServiceRoom {
+  id        String   @id @default(cuid())
+  serviceId String
+  service   Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  name      String   // "Deluxe Sea View", "Family Suite"
+  capacity  Int      @default(2)
+  basePrice Decimal  @db.Decimal(18, 2)
+  currency  String   @default("MGA")
+  qtyTotal  Int      @default(1)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bookings BookingRoom[]
+
+  @@index([serviceId])
+  @@map("service_rooms")
+}
+
+model ServiceDiscount {
+  id        String         @id @default(cuid())
+  serviceId String
+  service   Service        @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  type      DiscountType
+  value     Decimal        @db.Decimal(18, 2)
+  badge     DiscountBadge?
+  startAt   DateTime
+  endAt     DateTime
+  isActive  Boolean        @default(true)
+  createdAt DateTime       @default(now())
+
+  @@index([serviceId, startAt, endAt])
+  @@map("service_discounts")
+}
+
+model ServiceAvailability {
+  id              String   @id @default(cuid())
+  serviceId       String
+  service         Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  date            DateTime @db.Date
+  qtyTotal        Int      @default(1)
+  qtyReserved     Int      @default(0)
+  priceOverride   Decimal? @db.Decimal(18, 2)
+  isClosed        Boolean  @default(false)
+
+  @@unique([serviceId, date])
+  @@index([date])
+  @@map("service_availabilities")
+}
+
+// -----------------------------------------------------------------------------
+//  Cart, bookings, payments
+// -----------------------------------------------------------------------------
+
+model Cart {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  currency  String   @default("MGA")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items CartItem[]
+
+  @@map("carts")
+}
+
+model CartItem {
+  id            String   @id @default(cuid())
+  cartId        String
+  cart          Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  serviceId     String
+  service       Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  startDate     DateTime?
+  endDate       DateTime?
+  units         Int      @default(1)
+  adults        Int      @default(1)
+  childrenAges  Json?     // [5,8,...] for transparent pricing
+  addOnsJson    Json?
+  unitPrice     Decimal  @db.Decimal(18, 2)
+  currency      String   @default("MGA")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([cartId])
+  @@map("cart_items")
+}
+
+model Booking {
+  id                String        @id @default(cuid())
+  referenceCode     String        @unique
+  customerId        String
+  customer          User          @relation("BookingCustomer", fields: [customerId], references: [id])
+  serviceId         String
+  service           Service       @relation(fields: [serviceId], references: [id])
+  providerId        String        // denormalized for payout
+  checkInDate       DateTime?
+  checkOutDate      DateTime?
+  units             Int           @default(1)
+  adults            Int           @default(1)
+  childrenAges      Json?
+  guestsJson        Json          // [{firstName,lastName,phone,email,country,roomIndex}]
+  lineItemsJson     Json          // [{label,amount,type:'service'|'addon'|'fee'|'tax'|'discount'}]
+  subtotal          Decimal       @db.Decimal(18, 2)
+  discountAmount    Decimal       @db.Decimal(18, 2) @default(0)
+  taxAmount         Decimal       @db.Decimal(18, 2) @default(0)
+  feeAmount         Decimal       @db.Decimal(18, 2) @default(0)
+  total             Decimal       @db.Decimal(18, 2)
+  currency          String        @default("MGA")
+  exchangeRateToMga Decimal?      @db.Decimal(18, 6)
+  promoCodeId       String?
+  promoCode         PromoCode?    @relation(fields: [promoCodeId], references: [id])
+  giftCardId        String?
+  giftCard          GiftCard?     @relation(fields: [giftCardId], references: [id])
+  notes             String?
+  status            BookingStatus @default(PENDING)
+  confirmedAt       DateTime?
+  cancelledAt       DateTime?
+  cancellationReason String?
+  expiresAt         DateTime?     // PENDING -> EXPIRED reaper
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  deletedAt         DateTime?
+
+  rooms      BookingRoom[]
+  payments   Payment[]
+  reviews    Review[]
+  chatRooms  ChatRoom[]
+
+  @@index([customerId])
+  @@index([serviceId])
+  @@index([providerId])
+  @@index([status])
+  @@map("bookings")
+}
+
+model BookingRoom {
+  id        String   @id @default(cuid())
+  bookingId String
+  booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  roomId    String
+  room      ServiceRoom @relation(fields: [roomId], references: [id])
+  qty       Int      @default(1)
+  unitPrice Decimal  @db.Decimal(18, 2)
+  currency  String   @default("MGA")
+
+  @@map("booking_rooms")
+}
+
+model Payment {
+  id                  String         @id @default(cuid())
+  bookingId           String?
+  booking             Booking?       @relation(fields: [bookingId], references: [id])
+  userId              String
+  user                User           @relation(fields: [userId], references: [id])
+  method              PaymentMethod
+  amount              Decimal        @db.Decimal(18, 2)
+  currency            String         @default("MGA")
+  status              PaymentStatus  @default(INITIATED)
+  providerRef         String?        @unique // gateway transaction id
+  idempotencyKey      String?        @unique
+  rawProviderPayload  Json?
+  failureReason       String?
+  capturedAt          DateTime?
+  refundedAmount      Decimal?       @db.Decimal(18, 2)
+  refundedAt          DateTime?
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+
+  @@index([userId])
+  @@index([bookingId])
+  @@index([status])
+  @@map("payments")
+}
+
+// -----------------------------------------------------------------------------
+//  Promotions: promo codes, coupons, gift cards
+// -----------------------------------------------------------------------------
+
+model PromoCode {
+  id            String          @id @default(cuid())
+  code          String          @unique
+  description   String?
+  type          PromoCodeType   @default(PERCENT)
+  value         Decimal         @db.Decimal(10, 2)
+  appliesTo     Json?           // { categoryIds?: [], serviceIds?: [] }
+  minSpend      Decimal?        @db.Decimal(18, 2)
+  currency      String?
+  startAt       DateTime
+  endAt         DateTime
+  usageLimit    Int?            // total
+  perUserLimit  Int?            // per user
+  usedCount     Int             @default(0)
+  isActive      Boolean         @default(true)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  bookings     Booking[]
+  redemptions  PromoCodeRedemption[]
+
+  @@map("promo_codes")
+}
+
+model PromoCodeRedemption {
+  id          String    @id @default(cuid())
+  promoCodeId String
+  promoCode   PromoCode @relation(fields: [promoCodeId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bookingId   String?
+  redeemedAt  DateTime  @default(now())
+
+  @@unique([promoCodeId, bookingId])
+  @@index([userId])
+  @@map("promo_code_redemptions")
+}
+
+model GiftCard {
+  id          String    @id @default(cuid())
+  code        String    @unique
+  initialAmount Decimal @db.Decimal(18, 2)
+  balance     Decimal   @db.Decimal(18, 2)
+  currency    String    @default("MGA")
+  issuedById  String?
+  issuedBy    User?     @relation("GiftCardIssuedBy", fields: [issuedById], references: [id])
+  ownedById   String?
+  ownedBy     User?     @relation("GiftCardOwnedBy", fields: [ownedById], references: [id])
+  recipientEmail String?
+  message     String?
+  expiresAt   DateTime?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  bookings Booking[]
+
+  @@map("gift_cards")
+}
+
+// -----------------------------------------------------------------------------
+//  Wishlist
+// -----------------------------------------------------------------------------
+
+model WishlistItem {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  serviceId String
+  service   Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, serviceId])
+  @@map("wishlist_items")
+}
+
+// -----------------------------------------------------------------------------
+//  Reviews
+// -----------------------------------------------------------------------------
+
+model Review {
+  id          String   @id @default(cuid())
+  serviceId   String
+  service     Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  authorId    String
+  author      User     @relation("ReviewAuthor", fields: [authorId], references: [id])
+  bookingId   String?
+  booking     Booking? @relation(fields: [bookingId], references: [id])
+  rating      Int      // 1..5
+  title       String?
+  body        String?  @db.Text
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([serviceId])
+  @@index([authorId])
+  @@map("reviews")
+}
+
+// -----------------------------------------------------------------------------
+//  Chat (support + provider/customer messaging)
+// -----------------------------------------------------------------------------
+
+model ChatRoom {
+  id          String       @id @default(cuid())
+  type        ChatRoomType @default(SUPPORT)
+  bookingId   String?
+  booking     Booking?     @relation(fields: [bookingId], references: [id])
+  topic       String?
+  lastMessageAt DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  members  ChatRoomMember[]
+  messages ChatMessage[]
+
+  @@index([bookingId])
+  @@map("chat_rooms")
+}
+
+model ChatRoomMember {
+  roomId   String
+  room     ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  joinedAt DateTime @default(now())
+  leftAt   DateTime?
+  isAdmin  Boolean  @default(false)
+
+  @@id([roomId, userId])
+  @@map("chat_room_members")
+}
+
+model ChatMessage {
+  id          String   @id @default(cuid())
+  roomId      String
+  room        ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  senderId    String
+  sender      User     @relation(fields: [senderId], references: [id])
+  body        String   @db.Text
+  attachments Json?
+  readBy      Json?
+  createdAt   DateTime @default(now())
+
+  @@index([roomId])
+  @@map("chat_messages")
+}
+
+// -----------------------------------------------------------------------------
+//  Ads & dynamic homepage showcase
+// -----------------------------------------------------------------------------
+
+model AdBanner {
+  id           String       @id @default(cuid())
+  placement    AdPlacement
+  imageUrl     String
+  linkUrl      String?
+  title        String?
+  description  String?
+  translations Json?
+  startAt      DateTime
+  endAt        DateTime
+  sortOrder    Int          @default(0)
+  isActive     Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@index([placement, isActive, startAt, endAt])
+  @@map("ad_banners")
+}
+
+model HomepageShowcase {
+  id          String   @id @default(cuid())
+  slot        String   // e.g. "flash_offers", "trending", "best_deals"
+  categoryType CategoryType?
+  itemsJson   Json     // [{ serviceId, sortOrder }]
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([slot])
+  @@map("homepage_showcases")
+}
+
+// -----------------------------------------------------------------------------
+//  i18n & currency
+// -----------------------------------------------------------------------------
+
+model Currency {
+  code      String   @id // ISO 4217 e.g. MGA, USD, EUR
+  name      String
+  symbol    String
+  rateToMga Decimal  @db.Decimal(18, 6) // base = MGA (1 MGA = 1)
+  isActive  Boolean  @default(true)
+  updatedAt DateTime @updatedAt
+
+  @@map("currencies")
+}
+
+model LocaleString {
+  id           String   @id @default(cuid())
+  key          String   @unique
+  translations Json     // { en: "...", fr: "...", mg: "..." }
+  category     String?
+  updatedAt    DateTime @updatedAt
+
+  @@map("locale_strings")
+}
+
+// -----------------------------------------------------------------------------
+//  File storage records
+// -----------------------------------------------------------------------------
+
+model FileObject {
+  id          String   @id @default(cuid())
+  uploaderId  String
+  uploader    User     @relation(fields: [uploaderId], references: [id])
+  bucket      String
+  key         String
+  url         String
+  contentType String?
+  size        Int?
+  createdAt   DateTime @default(now())
+
+  @@unique([bucket, key])
+  @@map("file_objects")
+}
+
+// -----------------------------------------------------------------------------
+//  Audit log
+// -----------------------------------------------------------------------------
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actor      User?    @relation("AuditActor", fields: [actorId], references: [id])
+  action     String   // CREATE | UPDATE | DELETE | LOGIN | etc.
+  entity     String   // e.g. "Service", "Booking"
+  entityId   String?
+  diff       Json?
+  ip         String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  @@index([entity, entityId])
+  @@index([actorId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// -----------------------------------------------------------------------------
+//  Newsletter
+// -----------------------------------------------------------------------------
+
+model NewsletterSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  locale    String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("newsletter_subscribers")
+}

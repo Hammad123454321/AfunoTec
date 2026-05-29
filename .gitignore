@@ -1,0 +1,58 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+.next/
+out/
+dist/
+build/
+
+# Env / secrets
+.env
+.env.local
+.env.*.local
+*.pem
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Testing
+coverage/
+
+# Flutter
+mobile/ameer_nasr/.dart_tool/
+mobile/ameer_nasr/.flutter-plugins
+mobile/ameer_nasr/.flutter-plugins-dependencies
+mobile/ameer_nasr/build/
+mobile/ameer_nasr/.idea/
+
+# Original archives — keep out of repo
+*.zip
+
+# Mac noise
+__MACOSX/
+
+tools/
+docs/
+design/
+.p*
+
+# Client-facing deliverables (PDFs, comparison screenshots, zip bundles).
+# Source markdown lives under docs/ and design/ (already ignored above);
+# the generated artefacts shouldn't end up in version control either.
+/*.pdf
+/*.png
+/*.zip

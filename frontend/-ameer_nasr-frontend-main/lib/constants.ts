@@ -1,0 +1,81 @@
+export const SIDEBAR_ITEMS = [
+  {
+    id: "dashboard",
+    label: "Dashboard",
+    href: "/dashboard",
+    icon: "LayoutDashboard",
+    roles: ["super_admin"],
+  },
+  {
+    id: "user-management",
+    label: "User Management",
+    href: "/dashboard/user-management",
+    icon: "Users",
+    roles: ["super_admin"],
+  },
+  {
+    id: "form-management",
+    label: "Form Management",
+    href: "/dashboard/form-management",
+    icon: "ScrollText",
+    roles: ["super_admin"],
+  },
+  {
+    id: "payment-revenue",
+    label: "Payment & Revenue",
+    href: "/dashboard/payment-revenue",
+    icon: "BadgeDollarSign",
+    roles: ["super_admin"],
+  },
+  {
+    id: "communication",
+    label: "Communication",
+    href: "/dashboard/communication",
+    icon: "Send",
+    roles: ["super_admin"],
+  },
+  {
+    id: "create-news",
+    label: "Create News",
+    href: "/dashboard/create-news",
+    icon: "Newspaper",
+    roles: ["super_admin"],
+  },
+  {
+    id: "update-subscription",
+    label: "Update Subscription",
+    href: "/dashboard/update-subscription",
+    icon: "Captions",
+    roles: ["super_admin"],
+  },
+
+  // User Routes
+  {
+    id: "ai-assistant",
+    label: "AI Assistant",
+    href: "/dashboard/ai-assistant",
+    icon: "BiSupport",
+    roles: ["user"],
+  },
+  {
+    id: "applied-form",
+    label: "Applied Form",
+    href: "/dashboard/applied-form",
+    icon: "SiGoogleforms",
+    roles: ["user"],
+  },
+  {
+    id: "feedback",
+    label: "Feedback",
+    href: "/dashboard/feedback",
+    icon: "MdOutlineFeedback",
+    roles: ["user"],
+  },
+  {
+    id: "help-contact",
+    label: "Help & Contact",
+    href: "/dashboard/help-contact",
+    icon: "MdOutlineInfo",
+    roles: [, "user"],
+  },
+];

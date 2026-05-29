@@ -1,0 +1,163 @@
+/* MDXEditor heading styles */
+.mdxeditor-root-contenteditable h1 {
+  font-size: 2.25em;
+  font-weight: 800;
+  line-height: 1.2;
+  margin-top: 0.67em;
+  margin-bottom: 0.67em;
+}
+
+.mdxeditor-root-contenteditable h2 {
+  font-size: 1.875em;
+  font-weight: 700;
+  line-height: 1.3;
+  margin-top: 0.83em;
+  margin-bottom: 0.83em;
+}
+
+.mdxeditor-root-contenteditable h3 {
+  font-size: 1.5em;
+  font-weight: 600;
+  line-height: 1.4;
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+.mdxeditor-root-contenteditable h4 {
+  font-size: 1.25em;
+  font-weight: 600;
+  line-height: 1.4;
+  margin-top: 1.33em;
+  margin-bottom: 1.33em;
+}
+
+.mdxeditor-root-contenteditable h5 {
+  font-size: 1.125em;
+  font-weight: 600;
+  line-height: 1.5;
+  margin-top: 1.67em;
+  margin-bottom: 1.67em;
+}
+
+.mdxeditor-root-contenteditable h6 {
+  font-size: 1em;
+  font-weight: 600;
+  line-height: 1.5;
+  margin-top: 2.33em;
+  margin-bottom: 2.33em;
+}
+
+/* List styles */
+.mdxeditor-root-contenteditable ul {
+  list-style-type: disc;
+  padding-left: 1.5em;
+  margin: 1em 0;
+}
+
+.mdxeditor-root-contenteditable ol {
+  list-style-type: decimal;
+  padding-left: 1.5em;
+  margin: 1em 0;
+}
+
+.mdxeditor-root-contenteditable li {
+  margin: 0.25em 0;
+  padding-left: 0.25em;
+}
+
+.mdxeditor-root-contenteditable ul ul,
+.mdxeditor-root-contenteditable ol ol,
+.mdxeditor-root-contenteditable ul ol,
+.mdxeditor-root-contenteditable ol ul {
+  margin: 0.5em 0;
+}
+
+.mdxeditor-root-contenteditable ul ul {
+  list-style-type: circle;
+}
+
+.mdxeditor-root-contenteditable ul ul ul {
+  list-style-type: square;
+}
+
+/* ------------------------------ */
+/* Font Size Variants */
+/* ------------------------------ */
+
+.prose-sm {
+  font-size: 0.875rem; /* 14px */
+  line-height: 1.6;
+}
+
+.prose-base {
+  font-size: 1rem; /* 16px */
+  line-height: 1.75;
+}
+
+.prose-lg {
+  font-size: 1.125rem; /* 18px */
+  line-height: 1.8;
+}
+
+/* ------------------------------ */
+/* Font Family Variants */
+/* ------------------------------ */
+
+.font-sans {
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  letter-spacing: 0;
+}
+
+.font-serif {
+  font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  letter-spacing: 0.01em;
+}
+
+.font-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+  letter-spacing: -0.02em;
+}
+
+/* ------------------------------ */
+/* Optional — improve readability per font type */
+/* ------------------------------ */
+
+.font-serif p,
+.font-serif li {
+  line-height: 1.85;
+  color: #222;
+}
+
+.font-mono p,
+.font-mono li {
+  line-height: 1.7;
+  letter-spacing: -0.015em;
+  font-size: 0.95em;
+  color: #333;
+}
+
+.font-sans p,
+.font-sans li {
+  line-height: 1.8;
+  color: #1a1a1a;
+}
+
+/* ------------------------------ */
+/* Optional subtle animation when switching */
+/* ------------------------------ */
+
+.prose-sm,
+.prose-base,
+.prose-lg,
+.font-sans,
+.font-serif,
+.font-mono {
+  transition: all 0.25s ease-in-out;
+}
+
+.mdxeditor-toolbar {
+  overflow-x: auto;
+  white-space: nowrap;
+}

@@ -1,0 +1,68 @@
+# =============================================================================
+#  ameer_nasr — local development stack
+#  Brings up Postgres + Redis (and optionally the backend container).
+#  For active backend dev, run `npm run start:dev` locally and use only the
+#  postgres + redis services from this file.
+# =============================================================================
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ameer_nasr_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ameer
+      POSTGRES_PASSWORD: ameer
+      POSTGRES_DB: ameer_nasr
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ameer -d ameer_nasr"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: ameer_nasr_redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ameer_nasr_backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      APP_PORT: 4000
+      APP_HOST: 0.0.0.0
+      DATABASE_URL: postgresql://ameer:ameer@postgres:5432/ameer_nasr?schema=public
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    env_file:
+      - ./backend/.env
+    ports:
+      - "4000:4000"
+    profiles: ["full"] # only started with: docker compose --profile full up
+
+volumes:
+  postgres_data:
+  redis_data:
