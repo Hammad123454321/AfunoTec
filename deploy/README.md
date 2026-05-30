@@ -46,7 +46,7 @@ Set these in the repo: **Settings → Secrets and variables → Actions → New 
 | `VPS_USER`          | `deploy`                                 | A non-root user with docker permission (see §2).   |
 | `VPS_SSH_KEY`       | (entire private key, including headers)  | Generate with `ssh-keygen -t ed25519`. **Private** half goes here; public half goes into the VPS `~/.ssh/authorized_keys`. |
 | `VPS_PORT`          | `22` (optional)                          | Only set if SSH listens on a non-standard port.    |
-| `VPS_PROJECT_PATH`  | `/opt/ameer_nasr`                        | Where the repo is cloned on the VPS.               |
+| `VPS_PROJECT_PATH`  | `/opt/afuno_tech`                        | Where the repo is cloned on the VPS.               |
 
 No DB / JWT / payment secrets are stored on GitHub — they live exclusively
 in `.env` on the VPS.
@@ -82,9 +82,9 @@ sudo chmod 600 /home/deploy/.ssh/authorized_keys
 ### 2.3 Clone repo + create .env
 
 ```bash
-sudo mkdir -p /opt/ameer_nasr && sudo chown deploy:deploy /opt/ameer_nasr
-sudo -u deploy git clone <repo-url> /opt/ameer_nasr
-cd /opt/ameer_nasr
+sudo mkdir -p /opt/afuno_tech && sudo chown deploy:deploy /opt/afuno_tech
+sudo -u deploy git clone <repo-url> /opt/afuno_tech
+cd /opt/afuno_tech
 sudo -u deploy cp .env.example .env
 sudo -u deploy nano .env       # fill in real values (Postgres password, JWT secrets, etc.)
 ```
@@ -110,7 +110,7 @@ the host nginx talks to them.
 ### 2.5 Nginx site config
 
 ```bash
-sudo cp /opt/ameer_nasr/deploy/nginx/baodeals.com.conf /etc/nginx/sites-available/
+sudo cp /opt/afuno_tech/deploy/nginx/baodeals.com.conf /etc/nginx/sites-available/
 sudo ln -s /etc/nginx/sites-available/baodeals.com.conf /etc/nginx/sites-enabled/
 sudo rm -f /etc/nginx/sites-enabled/default
 sudo nginx -t
@@ -132,7 +132,7 @@ Wait for DNS to resolve (`dig baodeals.com +short` should return the IP).
 ### 2.7 First deploy
 
 ```bash
-sudo -u deploy bash /opt/ameer_nasr/deploy/deploy.sh
+sudo -u deploy bash /opt/afuno_tech/deploy/deploy.sh
 ```
 
 This builds the images, starts every container, runs the Prisma migrations
@@ -166,19 +166,19 @@ Routine deploys happen automatically from `main`. The manual equivalents:
 
 ```bash
 # Re-run the deploy by hand
-sudo -u deploy bash /opt/ameer_nasr/deploy/deploy.sh
+sudo -u deploy bash /opt/afuno_tech/deploy/deploy.sh
 
 # Tail logs
-sudo -u deploy docker compose -f /opt/ameer_nasr/docker-compose.yml logs -f backend
-sudo -u deploy docker compose -f /opt/ameer_nasr/docker-compose.yml logs -f frontend
+sudo -u deploy docker compose -f /opt/afuno_tech/docker-compose.yml logs -f backend
+sudo -u deploy docker compose -f /opt/afuno_tech/docker-compose.yml logs -f frontend
 
 # Rollback to a previous commit
-cd /opt/ameer_nasr
+cd /opt/afuno_tech
 sudo -u deploy git checkout <old-sha>
 sudo -u deploy bash deploy/deploy.sh
 
 # DB backup (run from cron once it matters)
-sudo -u deploy docker compose -f /opt/ameer_nasr/docker-compose.yml \
+sudo -u deploy docker compose -f /opt/afuno_tech/docker-compose.yml \
   exec -T postgres pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB" \
   | gzip > "/var/backups/ameer_nasr-$(date +%F).sql.gz"
 ```
