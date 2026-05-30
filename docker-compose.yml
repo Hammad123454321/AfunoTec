@@ -1,8 +1,21 @@
 # =============================================================================
-#  ameer_nasr — local development stack
-#  Brings up Postgres + Redis (and optionally the backend container).
-#  For active backend dev, run `npm run start:dev` locally and use only the
-#  postgres + redis services from this file.
+#  ameer_nasr — single docker-compose for local dev AND production VPS.
+#
+#  Local development
+#  -----------------
+#    Only start the data services and run the apps on your host:
+#        docker compose up -d postgres redis
+#        cd backend  && npm run start:dev
+#        cd frontend/-ameer_nasr-frontend-main && pnpm dev
+#
+#  Production VPS
+#  --------------
+#    A real .env at the repo root supplies the prod values. Then:
+#        docker compose up -d --build
+#    Host nginx + certbot proxy 80/443 → the 127.0.0.1 ports below.
+#
+#  All host port bindings are pinned to 127.0.0.1 so nothing is publicly
+#  reachable except via the host nginx reverse proxy.
 # =============================================================================
 
 services:
@@ -11,15 +24,15 @@ services:
     container_name: ameer_nasr_postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ameer
-      POSTGRES_PASSWORD: ameer
-      POSTGRES_DB: ameer_nasr
+      POSTGRES_USER: ${POSTGRES_USER:-ameer}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ameer}
+      POSTGRES_DB: ${POSTGRES_DB:-ameer_nasr}
     ports:
-      - "5432:5432"
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ameer -d ameer_nasr"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ameer} -d ${POSTGRES_DB:-ameer_nasr}"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -30,7 +43,7 @@ services:
     restart: unless-stopped
     command: ["redis-server", "--appendonly", "yes"]
     ports:
-      - "6379:6379"
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -51,17 +64,44 @@ services:
       redis:
         condition: service_healthy
     environment:
-      NODE_ENV: production
+      NODE_ENV: ${NODE_ENV:-production}
       APP_PORT: 4000
       APP_HOST: 0.0.0.0
-      DATABASE_URL: postgresql://ameer:ameer@postgres:5432/ameer_nasr?schema=public
+      APP_CORS_ORIGINS: ${APP_CORS_ORIGINS:-https://baodeals.com,https://www.baodeals.com}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-ameer}:${POSTGRES_PASSWORD:-ameer}@postgres:5432/${POSTGRES_DB:-ameer_nasr}?schema=public
       REDIS_HOST: redis
       REDIS_PORT: 6379
-    env_file:
-      - ./backend/.env
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-dev-access-secret}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-dev-refresh-secret}
+      JWT_ACCESS_TTL: ${JWT_ACCESS_TTL:-900}
+      JWT_REFRESH_TTL: ${JWT_REFRESH_TTL:-604800}
+      SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:-admin@baodeals.com}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-ChangeMe!Admin#2026}
+      SEED_ADMIN_NAME: ${SEED_ADMIN_NAME:-System Admin}
     ports:
-      - "4000:4000"
-    profiles: ["full"] # only started with: docker compose --profile full up
+      - "127.0.0.1:${BACKEND_PORT:-4000}:4000"
+
+  frontend:
+    build:
+      context: ./frontend/-ameer_nasr-frontend-main
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api.baodeals.com/api/v1}
+    container_name: ameer_nasr_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api.baodeals.com/api/v1}
+    # FRONTEND_BIND controls the host port binding. Defaults to localhost:3000
+    # (for when nginx fronts it). Set FRONTEND_BIND=0.0.0.0:80 in .env to
+    # expose the container directly on http://<vps-ip>/ before nginx + the
+    # domain are wired up.
+    ports:
+      - "${FRONTEND_BIND:-127.0.0.1:3000}:3000"
 
 volumes:
   postgres_data:
