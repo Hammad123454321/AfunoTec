@@ -42,9 +42,9 @@ Set these in the repo: **Settings → Secrets and variables → Actions → New 
 
 | Secret              | Example                                  | Notes                                              |
 |---------------------|------------------------------------------|----------------------------------------------------|
-| `VPS_HOST`          | `185.x.x.x`  or  `vps.baodeals.com`      | IP or DNS reachable from GitHub-hosted runners.    |
-| `VPS_USER`          | `deploy`                                 | A non-root user with docker permission (see §2).   |
-| `VPS_SSH_KEY`       | (entire private key, including headers)  | Generate with `ssh-keygen -t ed25519`. **Private** half goes here; public half goes into the VPS `~/.ssh/authorized_keys`. |
+| `VPS_HOST`          | `72.62.210.174` or `vps.baodeals.com`    | IP or DNS reachable from GitHub-hosted runners.    |
+| `VPS_USER`          | `root`                                   | The user the workflow logs in as.                  |
+| `VPS_PASSWORD`      | (the SSH password)                       | Plain SSH password auth. (Key auth is supported too — swap `password:` for `key:` in `.github/workflows/deploy.yml` and use `VPS_SSH_KEY` instead.) |
 | `VPS_PORT`          | `22` (optional)                          | Only set if SSH listens on a non-standard port.    |
 | `VPS_PROJECT_PATH`  | `/opt/afuno_tech`                        | Where the repo is cloned on the VPS.               |
 
