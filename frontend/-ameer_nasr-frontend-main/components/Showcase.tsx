@@ -40,7 +40,7 @@ export default function Showcase({ slides }: Props) {
       <CarouselContent>
         {slides.map((slide, index) => (
           <CarouselItem key={slide.id}>
-            <div className="relative w-full h-[70vh] overflow-hidden">
+            <div className="relative w-full h-screen min-h-[560px] overflow-hidden">
               <Image
                 fill
                 src={slide.src}

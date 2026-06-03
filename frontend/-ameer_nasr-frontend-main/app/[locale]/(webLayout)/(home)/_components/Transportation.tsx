@@ -16,16 +16,16 @@ export default function Transportation() {
       title={
         <>
           <Image
-            src="/toursImage.png"
+            src="/transportationImage.png"
             width={36}
             height={36}
-            alt="Tours Icon"
+            alt="Transportation icon"
             className=" "
           />
-          Car rental and <TextPrimary500>Transportation Services</TextPrimary500>
+          Transportation & <TextPrimary500>Car Rental</TextPrimary500>
         </>
       }
-      cta={<ExploreButton href="/" />}
+      cta={<ExploreButton href="/transportation" />}
     >
       <Container>
         <ProductCarousel<ProductCardType>

@@ -7,6 +7,7 @@ import Container from "@/components/layout/Container";
 import { ProductCarousel } from "@/features/product/components/ProductCarousel";
 import { ProductCardType } from "@/features/product/types/product.types";
 import { productData } from "@/features/product/data";
+import ExploreButton from "@/components/ExploreButton";
 
 export default function HotelApartmentsCard() {
   return (
@@ -18,13 +19,13 @@ export default function HotelApartmentsCard() {
             src="/hotelApartments.png"
             width={36}
             height={36}
-            alt="Tours Icon"
+            alt="Hotel icon"
             className=" "
           />
-          Hotels <TextPrimary500>Stay</TextPrimary500>
+          Hotel, Apartments and <TextPrimary500>Lodges</TextPrimary500>
         </>
       }
-
+      cta={<ExploreButton href="/stays" />}
     >
       <Container>
         <ProductCarousel<ProductCardType>

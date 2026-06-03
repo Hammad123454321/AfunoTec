@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -230,6 +229,7 @@
 
 :root {
   --radius: 0.625rem;
+  --base-font-size: 16px;
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.13 0.028 261.692);
   --popover: oklch(1 0 0);
@@ -275,12 +275,15 @@
 
 html {
   scroll-behavior: smooth;
+  font-size: clamp(0.94rem, 1vw + 0.5rem, 1.05rem);
   @apply overflow-x-clip;
 }
 
 body {
   font-family: var(--font-sans);
+  font-size: 1rem;
 }
+
 
 .react-tel-input {
   border: 1 solid black;
