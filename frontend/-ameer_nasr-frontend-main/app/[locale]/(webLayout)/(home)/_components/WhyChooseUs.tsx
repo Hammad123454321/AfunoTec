@@ -24,9 +24,11 @@ const WhyChooseUsWithIcons: React.FC = () => {
               />
             </div>
             <h3 className="text-lg font-semibold mb-2 text-red-600">
-              Best Prices
+              Best Prices for Locals
             </h3>
-            <p className="text-sm text-gray-700">Best Price</p>
+            <p className="text-sm text-gray-700 leading-relaxed">
+              Real Malagasy Rates — Not Tourist Prices. We work directly with hotels, drivers, and activity providers to secure authentic local prices with no inflated costs.
+            </p>
           </div>
 
           {/* Service */}
@@ -41,12 +43,14 @@ const WhyChooseUsWithIcons: React.FC = () => {
               />
             </div>
             <h3 className="text-lg font-semibold mb-2 text-green-600">
-              Service
+              Customer Service You Can Trust
             </h3>
-            <p className="text-sm text-gray-700">Local Dedicated Teams...</p>
+            <p className="text-sm text-gray-700 leading-relaxed">
+              Support 7/7 from a Team in Madagascar. Instant help in Malagasy, French, or English. We’re here for booking changes, issues, or travel questions — fast and reliable.
+            </p>
           </div>
 
-          {/* Local */}
+          {/* Payments */}
           <div className="flex flex-col items-center text-center">
             <div className="w-14 h-14 rounded-full bg-red-600 flex items-center justify-center mb-4 shadow-lg">
               <Image
@@ -57,8 +61,10 @@ const WhyChooseUsWithIcons: React.FC = () => {
                 height={24}
               />
             </div>
-            <h3 className="text-lg font-semibold mb-2 text-red-600">Local</h3>
-            <p className="text-sm text-gray-700">100% Malagasy</p>
+            <h3 className="text-lg font-semibold mb-2 text-red-600">Safe & Easy Payments</h3>
+            <p className="text-sm text-gray-700 leading-relaxed">
+              Secure Online & Mobile Money Payments Only. Pay using Mvola, Airtel Money, Orange Money, or bank cards — safe, fast and fully digital. No cash, no stress.
+            </p>
           </div>
 
           {/* All in One */}
@@ -73,9 +79,11 @@ const WhyChooseUsWithIcons: React.FC = () => {
               />
             </div>
             <h3 className="text-lg font-semibold mb-2 text-green-600">
-              All in One
+              Everything in One Place
             </h3>
-            <p className="text-sm text-gray-700">Hotels & activities</p>
+            <p className="text-sm text-gray-700 leading-relaxed">
+              All Your Travel Needs on One Platform. Hotels, cars, transfers, tours and activities — compare and book everything from one simple, all-in-one booking platform.
+            </p>
           </div>
         </div>
       </div>
