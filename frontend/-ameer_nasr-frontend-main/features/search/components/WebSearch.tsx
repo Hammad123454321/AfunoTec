@@ -47,7 +47,7 @@ export default function WebSearch() {
     },
     {
       id: "tour",
-      label: "Tours",
+      label: "Tours & Eco Tourism",
       icon: <Mountain className="w-6 h-6" />,
       color: "bg-blue-50 text-blue-500",
       component: <TourSearch />,

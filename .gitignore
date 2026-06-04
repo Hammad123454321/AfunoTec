@@ -10,8 +10,6 @@ dist/
 build/
 
 # Env / secrets
-.env
-.env.local
 .env.*.local
 *.pem
 
@@ -56,3 +54,4 @@ design/
 /*.pdf
 /*.png
 /*.zip
+config.bat
