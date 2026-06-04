@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import {
   COUNTRIES,
@@ -178,13 +179,19 @@ export default function CheckoutPage() {
                 />
                 <label htmlFor="terms" className="text-sm text-gray-600">
                   I agree to the{" "}
-                  <a className="text-emerald-700 hover:underline" href="/terms">
+                  <Link
+                    className="text-emerald-700 hover:underline"
+                    href="/terms"
+                  >
                     Terms
-                  </a>{" "}
+                  </Link>{" "}
                   and{" "}
-                  <a className="text-emerald-700 hover:underline" href="/privacy">
+                  <Link
+                    className="text-emerald-700 hover:underline"
+                    href="/privacy"
+                  >
                     Privacy Policy
-                  </a>
+                  </Link>
                   .
                 </label>
               </div>
