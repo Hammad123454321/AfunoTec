@@ -14,30 +14,34 @@ import NosyBeeSearch from "./NosyBeeSearch";
 import { cn } from "@/lib/utils";
 
 import {
-  Home,
-  Clock,
+  BedDouble,
+  Sparkles,
   Mountain,
-  Activity,
-  Users,
-  Star,
-  MapPin,
+  Plane,
+  Car,
+  Palmtree,
+  Briefcase,
 } from "lucide-react";
 
+// Order, labels and category icons mirror the Figma home page exactly
+// (STAYS · THINGS TO DO · TOURS · TRAVELS · TRANSPORTATION · NOSY BE
+// · CORPORATE). The `id` strings stay stable because they're used as
+// route keys downstream.
 export default function WebSearch() {
   const [activeTab, setActiveTab] = useState("stays");
 
   const tabs = [
     {
       id: "stays",
-      label: "Hotels",
-      icon: <Home className="w-6 h-6" />,
+      label: "Stays",
+      icon: <BedDouble className="w-6 h-6" />,
       color: "bg-green-100 text-green-700",
       component: <HotelSearch />,
     },
     {
       id: "things-to-do",
-      label: "Activities",
-      icon: <Clock className="w-6 h-6" />,
+      label: "Things To Do",
+      icon: <Sparkles className="w-6 h-6" />,
       color: "bg-yellow-50 text-yellow-600",
       component: <ActivitySearch />,
     },
@@ -49,32 +53,32 @@ export default function WebSearch() {
       component: <TourSearch />,
     },
     {
-      id: "transportation",
-      label: "Transportation",
-      icon: <Activity className="w-6 h-6" />,
-      color: "bg-pink-50 text-pink-500",
-      component: <TransportationSearch />,
-    },
-    {
-      id: "corporate",
-      label: "Meetings",
-      icon: <Users className="w-6 h-6" />,
-      color: "bg-purple-50 text-purple-500",
-      component: <MeetingSearch />,
-    },
-    {
       id: "travel",
-      label: "Travel",
-      icon: <Star className="w-6 h-6" />,
+      label: "Travels",
+      icon: <Plane className="w-6 h-6" />,
       color: "bg-emerald-50 text-emerald-600",
       component: <TravelSearch />,
     },
     {
+      id: "transportation",
+      label: "Transportation",
+      icon: <Car className="w-6 h-6" />,
+      color: "bg-pink-50 text-pink-500",
+      component: <TransportationSearch />,
+    },
+    {
       id: "nosybee",
       label: "Nosy Be",
-      icon: <MapPin className="w-6 h-6" />,
+      icon: <Palmtree className="w-6 h-6" />,
       color: "bg-red-50 text-red-500",
       component: <NosyBeeSearch />,
+    },
+    {
+      id: "corporate",
+      label: "Corporate",
+      icon: <Briefcase className="w-6 h-6" />,
+      color: "bg-purple-50 text-purple-500",
+      component: <MeetingSearch />,
     },
   ];
 
@@ -85,10 +89,10 @@ export default function WebSearch() {
     <Section
       title={
         <>
-          THE BEST DEALS & <TextPrimary500>PROMOTIONS</TextPrimary500>
+          BEST DEALS & <TextPrimary500>PROMOTIONS</TextPrimary500>
         </>
       }
-      description="Handpicked hotels, villas, and experiences at prices made for locals and visitors alike."
+      description="Find best deals on Hotels, Villas, and much more..."
       className="overflow-x-clip"
     >
       <Container>

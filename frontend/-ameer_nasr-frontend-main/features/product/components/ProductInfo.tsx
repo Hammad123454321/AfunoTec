@@ -159,7 +159,7 @@ export function PackageSummary({
         </div>
       )}
 
-      <Heading as="h3" size="h4">
+      <Heading as="h3" size="h4" weight="bold" className="mb-6">
         <span className="uppercase">{title} </span>
         <TextPrimary500>{highlightText}</TextPrimary500>
       </Heading>

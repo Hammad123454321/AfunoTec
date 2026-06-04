@@ -19,9 +19,13 @@ COPY . .
 
 # Public env vars must be present at build time so Next.js can inline them
 # into the static bundle. Defaults are safe for a smoke build; the real
-# value comes from docker-compose.yml `args:`.
+# values come from docker-compose.yml `args:`.
 ARG NEXT_PUBLIC_API_URL=https://api.baodeals.com/api/v1
+ARG NEXT_PUBLIC_GA_ID=
+ARG NEXT_PUBLIC_FB_PIXEL_ID=
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_GA_ID=$NEXT_PUBLIC_GA_ID
+ENV NEXT_PUBLIC_FB_PIXEL_ID=$NEXT_PUBLIC_FB_PIXEL_ID
 ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN pnpm build

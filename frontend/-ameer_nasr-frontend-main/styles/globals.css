@@ -276,10 +276,31 @@
 html {
   scroll-behavior: smooth;
   @apply overflow-x-clip;
+  /* Fluid base size: scales from 14px at 360px viewports up to 16px at
+     1280px+. Every Tailwind `text-*` (which uses rem) inherits this
+     scaling, so the same class names give proportionally smaller copy
+     on phones without per-component overrides. */
+  font-size: clamp(0.875rem, 0.78rem + 0.42vw, 1rem);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
   font-family: var(--font-sans);
+  @apply overflow-x-clip;
+  min-width: 320px;
+}
+
+/* Belt-and-braces guard: any direct child of body that leaks beyond the
+   viewport (rare offenders: absolutely-positioned decoration, embedded
+   carousels with negative margins) still won't trigger a horizontal
+   scrollbar at the document level. */
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
+  height: auto;
 }
 
 .react-tel-input {

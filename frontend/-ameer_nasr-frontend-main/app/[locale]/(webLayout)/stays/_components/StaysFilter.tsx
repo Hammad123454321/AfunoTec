@@ -6,9 +6,9 @@ import { Button } from '@/components/ui/button';
 export default function StaysFilterSidebar() {
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     'accommodation-type': true,
-    'meal Plan': true,
-    'Your budget': true,
-    'Special Offers': true,
+    'meal-plan': true,
+    'budget': true,
+    'special-offers': true,
     'location': true,
     'star-rating': true,
     'key-features': true,
@@ -86,6 +86,16 @@ export default function StaysFilterSidebar() {
         { value: "250000-500000", label: "Ar 250,000 - 500,000 / night", count: 16 },
         { value: "500001-1000000", label: "Ar 500,001 - 1,000,000 / night", count: 22 },
         { value: "1000001", label: "Ar 1,000,001 - + / night", count: 14 },
+      ],
+    },
+    {
+      id: "special-offers",
+      label: "Special Offers",
+      options: [
+        { value: "super-discount", label: "Super Discount", count: 4 },
+        { value: "honeymoon-offers", label: "Honeymoon Offers", count: 3 },
+        { value: "spa-discount", label: "Spa Discount", count: 3 },
+        { value: "meal-upgrade", label: "Meal Upgrade", count: 4 },
       ],
     },
   ];

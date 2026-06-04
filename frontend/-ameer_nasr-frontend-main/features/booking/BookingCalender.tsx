@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, HelpCircle, X, Youtube } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
@@ -11,185 +11,190 @@ type Props = {
   discountPrice?: number;
   durationType?: "day" | "night";
   type?: "single" | "range";
+  /**
+   * Display currency. Defaults to "Rs" because the booking demo data
+   * shown in the Figma is a Mauritius hotel; pass `currency="MGA"` for
+   * Madagascar inventory.
+   */
+  currency?: string;
 };
 
-type MealPlan = {
-  id: string;
-  name: string;
+// Figma fixes October 2020 as the demo month. Until a real month picker
+// lands we render that snapshot verbatim so the layout matches.
+type CalendarMonth = {
+  label: string;
+  /** 0=Mon … 6=Sun. October 1st 2020 was a Thursday → index 3. */
+  startDayOffset: number;
+  daysInMonth: number;
 };
 
-const mealPlans: MealPlan[] = [
-  { id: "hb", name: "Half Board" },
-  { id: "ai", name: "All Inclusive" },
-  { id: "re-hb", name: "Romantic Escape · Half Board" },
-  { id: "re-ai", name: "Romantic Escape · All Inclusive" },
-];
+const DEMO_MONTH: CalendarMonth = {
+  label: "October 2020",
+  startDayOffset: 3,
+  daysInMonth: 31,
+};
+
+const WEEKDAYS = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
 
 export default function BookingCalender({
-  basePrice = 9000,
-  discountPrice = 11250,
+  basePrice = 9900,
+  discountPrice = 11900,
   durationType = "night",
-  tooltip,
-  type = "single",
+  currency = "Rs",
 }: Props) {
-  const [currentMonth] = useState("March 2026");
-  const days = Array.from({ length: 31 }, (_, i) => i + 1);
-  const startDayOffset = 6; // Start on Sunday (index 6 if Mon=0)
+  const month = DEMO_MONTH;
+  const days = Array.from({ length: month.daysInMonth }, (_, i) => i + 1);
 
   return (
-    <div className="w-full max-w-full bg-white shadow-2xl rounded-2xl overflow-hidden border border-gray-100 flex flex-col">
-      {/* Header - Green Price Section */}
-      <div className="bg-[#2d9e4f] p-8 text-white">
-        <div className="flex items-baseline gap-2 mb-2">
-          <span className="text-sm font-medium opacity-90">From</span>
-          <h2 className="text-base md:text-xl font-serif font-semibold leading-none tracking-tight">
-            MGA {new Intl.NumberFormat("en-US").format(basePrice)}
-          </h2>
-          <span className="text-sm font-medium opacity-90">
-            /{durationType}
-          </span>
-        </div>
-        <div className="flex items-center gap-3 text-sm opacity-80">
+    <div className="w-full max-w-full bg-white shadow-lg rounded-md overflow-hidden border border-gray-200 flex flex-col">
+      {/* Price Header — white background, red price + grey strikethrough.
+          Matches the Figma frame exactly. */}
+      <div className="flex items-baseline flex-wrap gap-x-2 gap-y-1 px-4 py-3 border-b border-gray-200">
+        <span className="text-rose-600 font-bold text-lg leading-none">
+          From {currency} {new Intl.NumberFormat("en-US").format(basePrice)}/
+        </span>
+        <span className="text-gray-900 text-sm flex items-center gap-1 capitalize">
+          {durationType}
+          <HelpCircle
+            size={14}
+            className="text-gray-400"
+            aria-label="Price information"
+          />
+        </span>
+        <span className="ml-auto text-gray-400 text-sm">
           <span className="line-through">
-            MGA{" "}
-            {new Intl.NumberFormat("en-US").format(
-              discountPrice || basePrice * 1.2,
-            )}{" "}
-            /{durationType}
-          </span>
-          <span className="bg-white/20 px-2 py-0.5 rounded font-semibold">
-            Save 20%
-          </span>
+            {currency} {new Intl.NumberFormat("en-US").format(discountPrice)}/
+          </span>{" "}
+          <span className="capitalize">{durationType}</span>
+        </span>
+      </div>
+
+      {/* "Selected Check In" green bar */}
+      <div className="bg-[#22a628] text-white px-4 py-2.5 text-sm font-medium">
+        Selected Check In
+      </div>
+
+      {/* Month nav */}
+      <div className="px-4 pt-4 pb-2 flex items-center justify-between">
+        <h3 className="text-base font-bold text-gray-900">{month.label}</h3>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            className="w-7 h-7 flex items-center justify-center rounded text-gray-700 hover:bg-gray-100"
+            aria-label="Previous month"
+          >
+            <ChevronLeft size={18} />
+          </button>
+          <button
+            type="button"
+            className="w-7 h-7 flex items-center justify-center rounded text-gray-700 hover:bg-gray-100"
+            aria-label="Next month"
+          >
+            <ChevronRight size={18} />
+          </button>
         </div>
       </div>
 
-      {/* Calendar Section */}
-      <div className="p-8 space-y-8">
-        <div>
-          <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-6">
-            SELECT YOUR DATES
-          </h3>
-
-          {/* Month Navigation */}
-          <div className="flex items-center justify-between mb-8">
-            <button className="w-10 h-10 flex items-center justify-center border border-gray-100 rounded-full text-gray-400 hover:bg-gray-50 transition-colors">
-              <ChevronLeft size={20} />
-            </button>
-            <span className="text-lg font-serif font-semibold text-gray-800">
-              {currentMonth}
-            </span>
-            <button className="w-10 h-10 flex items-center justify-center border border-gray-100 rounded-full text-gray-400 hover:bg-gray-50 transition-colors">
-              <ChevronRight size={20} />
-            </button>
-          </div>
-
-          {/* Calendar Grid */}
-          <div className="grid grid-cols-7 gap-y-4 text-center">
-            {["M", "T", "W", "T", "F", "S", "S"].map((day, idx) => (
-              <span
-                key={idx}
-                className="text-xs font-semibold text-gray-300 mb-2"
-              >
-                {day}
-              </span>
-            ))}
-
-            {Array.from({ length: startDayOffset }).map((_, i) => (
-              <div key={`empty-${i}`} />
-            ))}
-
-            {days.map((day) => {
-              const isSelected = day === 15;
-              return (
-                <button
-                  key={day}
-                  className={cn(
-                    "h-10 w-10 mx-auto flex items-center justify-center rounded-lg text-sm font-semibold transition-all",
-                    isSelected
-                      ? "bg-[#2d9e3f] text-white shadow-lg shadow-green-100"
-                      : "text-gray-400 hover:bg-gray-50",
-                  )}
-                >
-                  {day}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Legend */}
-          <div className="flex items-center gap-6 mt-8">
-            <div className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 rounded-full bg-[#2d9e3f]" />
-              <span className="text-xs font-semibold text-gray-400">Today</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 border-2 border-[#2d9e3f] rounded-sm" />
-              <span className="text-xs font-semibold text-gray-400">
-                Available
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 bg-gray-100 rounded-sm" />
-              <span className="text-xs font-semibold text-gray-400">
-                Unavailable
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div className="h-px bg-gray-100 w-full" />
-
-        {/* Check-in/Out Display */}
-        <div className="grid grid-cols-3 gap-4 text-center">
-          <div>
-            <p className="text-[10px] font-semibold text-gray-300 uppercase tracking-widest mb-1">
-              CHECK-IN
-            </p>
-            <p className="text-lg font-semibold text-gray-400">_</p>
-          </div>
-          <div>
-            <p className="text-[10px] font-semibold text-gray-300 uppercase tracking-widest mb-1">
-              CHECK-OUT
-            </p>
-            <p className="text-lg font-semibold text-gray-400">_</p>
-          </div>
-          <div>
-            <p className="text-[10px] font-semibold text-gray-300 uppercase tracking-widest mb-1">
-              NIGHTS
-            </p>
-            <p className="text-lg font-semibold text-gray-400">_</p>
-          </div>
-        </div>
-
-        {/* Meal Plans */}
-        <div className="space-y-4 pt-4 text-sm font-semibold text-gray-600">
-          {mealPlans.map((plan) => (
-            <div
-              key={plan.id}
-              className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0 grow"
+      {/* Calendar Grid */}
+      <div className="px-4 pb-4">
+        <div className="grid grid-cols-7 gap-y-3 text-center">
+          {WEEKDAYS.map((day) => (
+            <span
+              key={day}
+              className="text-xs font-medium text-gray-500 pb-2"
             >
-              <span>{plan.name}</span>
-              <button className="text-[#ef4444] hover:underline transition-all font-serif">
-                Select dates &rarr;
-              </button>
-            </div>
+              {day}
+            </span>
+          ))}
+
+          {Array.from({ length: month.startDayOffset }).map((_, i) => (
+            <div key={`empty-${i}`} />
+          ))}
+
+          {days.map((day) => (
+            <button
+              key={day}
+              type="button"
+              className={cn(
+                "h-9 w-9 mx-auto flex items-center justify-center rounded text-sm transition-colors",
+                "text-gray-700 hover:bg-gray-100",
+              )}
+            >
+              {day}
+            </button>
           ))}
         </div>
+      </div>
 
-        {/* Total Summary */}
-        <div className="flex items-center justify-between pt-8">
-          <span className="text-xl font-semibold text-gray-800">Subtotal</span>
-          <div className="text-right">
-            <p className="text-xl font-serif font-semibold text-[#2d9e3f]">
-              MGA 0
-            </p>
-          </div>
+      {/* Legend row */}
+      <div className="px-4 py-3 border-t border-gray-200 flex items-center justify-between text-xs">
+        <div className="flex items-center gap-1.5 text-gray-400">
+          <span className="w-3 h-3 border border-gray-300" aria-hidden />
+          <span>Available</span>
         </div>
+        <div className="flex items-center gap-1.5 text-gray-400">
+          <span className="w-3 h-3 bg-gray-300" aria-hidden />
+          <span>Not Available</span>
+        </div>
+        <button
+          type="button"
+          className="flex items-center gap-1.5 text-emerald-600 hover:text-emerald-700"
+        >
+          <X size={14} aria-hidden />
+          <span>Clear Date</span>
+        </button>
+      </div>
 
-        {/* Book Now Button */}
-        <Link href={`/bookings`}>
-          <button className="w-full py-5 bg-[#2d9e3f] text-white text-lg font-semibold rounded-2xl hover:bg-[#268c44] transition-all shadow-xl shadow-green-100 transform active:scale-95 mb-5">
-            Book now
+      {/* How-to-order video link */}
+      <div className="px-4 py-3 border-t border-gray-200 flex items-center justify-center gap-2 text-rose-600 text-sm">
+        <span>How to order ( step by Step Video )</span>
+        <span className="inline-flex items-center justify-center w-5 h-5 bg-rose-600 rounded-sm">
+          <Youtube size={14} className="text-white" fill="currentColor" />
+        </span>
+      </div>
+
+      {/* Check-In / Check-Out / Nights grid */}
+      <div className="grid grid-cols-3 border-t border-gray-200">
+        {[
+          { label: "Check-IN", value: "-" },
+          { label: "Check-Out", value: "-" },
+          { label: "Nights", value: "-" },
+        ].map((cell, idx) => (
+          <div
+            key={cell.label}
+            className={cn(
+              "px-3 py-3 text-center",
+              idx < 2 && "border-r border-gray-200",
+            )}
+          >
+            <div className="text-xs text-gray-400 mb-1">{cell.label}</div>
+            <div className="text-base text-gray-700">{cell.value}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Discount banner */}
+      <div className="bg-[#1e3a8a] text-white text-center px-4 py-3 border-t border-gray-200">
+        <p className="text-sm leading-tight">Click on the Booking Options to</p>
+        <p className="text-sm font-bold leading-tight tracking-wide">
+          See the DISCOUNTED PRICE
+        </p>
+      </div>
+
+      {/* Subtotal + Book Now */}
+      <div className="px-4 py-4 border-t border-gray-200">
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-base text-gray-900">Subtotal</span>
+          <span className="text-xl font-bold text-[#22a628]">
+            {currency} 0
+          </span>
+        </div>
+        <Link href="/bookings">
+          <button
+            type="button"
+            className="w-full py-3 bg-[#22a628] text-white text-base font-bold rounded hover:bg-[#1d8e22] transition-colors"
+          >
+            Book Now
           </button>
         </Link>
       </div>

@@ -76,7 +76,7 @@ export default function Section({
             <Heading
               as="h4"
               size="h4"
-              weight="semibold"
+              weight="bold"
               align={align}
               className="tracking-tight flex gap-2.5"
             >
