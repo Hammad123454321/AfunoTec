@@ -2,15 +2,10 @@ import { socialPaths } from "@/paths";
 import Link from "next/link";
 import { BsTelephone } from "react-icons/bs";
 import {
-  FaCcAmex,
-  FaCcMastercard,
-  FaCcPaypal,
-  FaCcVisa,
   FaEnvelope,
   FaFacebookF,
   FaInstagram,
   FaMapMarkerAlt,
-  FaMobileAlt,
   FaYoutube,
 } from "react-icons/fa";
 
@@ -25,20 +20,18 @@ const socialIcons = {
   phone: <BsTelephone />,
 };
 
-// Contact Information.
-// TODO(client): the address / phone numbers / email below are placeholders.
-// Replace once the client provides the real AfunoTec contact details.
+// Contact Information
 const CONTACT_INFO = {
   address: {
-    line1: "TODO: AfunoTec head office",
-    line2: "TODO: street + city",
-    postalCode: "TODO",
+    line1: "The Octopus Building",
+    line2: "Royal Road, Pointe aux Canonniers",
+    postalCode: "30510",
   },
   phone: {
     business: "269 1500",
     hotline: "5256 6138",
   },
-  email: "info@afunotec.com",
+  email: "info@baodeal.net",
   hours: {
     weekday: { label: "Monday - Friday", time: "08h00 - 20h00" },
     saturday: { label: "Saturday", time: "08h00 - 16h00" },
@@ -65,7 +58,7 @@ const FOOTER_LINKS = {
     "Why are we the best?",
     "FAQs",
     "Video Tutorials",
-    { text: "afunotec.com by AfunoTec", link: "https://afunotec.com" },
+    { text: "baodeal.net by baodeal", link: "https://baodeal.net" },
     "Corporate Deals",
     "Madagascar blogs",
     "Influencer Program",
@@ -79,34 +72,29 @@ const FOOTER_LINKS = {
   ],
 };
 
-// Company Information.
-// TODO(client): trading name + registration number need to be confirmed.
+// Company Information
 const COMPANY_INFO = {
-  name: "AfunoTec",
-  registrationNumber: "TODO",
-  tradingName: "AfunoTec Ltd",
+  name: "Baodeal.net",
+  registrationNumber: "15288",
+  tradingName: "Baodeals Simply the Best Ltd",
 };
 
 export default function Footer() {
   return (
-    <footer className="bg-[linear-gradient(110deg,#1f9d51_0%,#43bd78_30%,#f3c5d2_72%,#f5a8bc_100%)] text-white">
+    <footer className="bg-[linear-gradient(to_bottom_right,#0e1a2c_0%,#144947_100%)] text-white">
       {/* Newsletter Section */}
-      <div className="py-6 px-4">
+      <div className=" py-6 px-4">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-center gap-4">
-          <div className="text-base md:text-lg font-semibold uppercase md:px-8 lg:px-16 text-center md:text-left">
+          <div className="text-base font-semibold md:text-lg font-semibold uppercase md:px-16 text-center md:text-left">
             Sign Up For Our Newsletter
           </div>
-          <div className="flex flex-col sm:flex-row w-full md:w-auto items-stretch gap-2">
+          <div className="flex flex-col md:flex-row w-full md:w-auto items-stretch gap-2">
             <input
               type="email"
               placeholder="Email Address"
               className="px-4 py-2 text-black border border-gray-300 w-full md:w-[300px] bg-white"
-              aria-label="Email address"
             />
-            <button
-              type="button"
-              className="bg-[#00bfa4] text-black px-6 py-2 font-semibold whitespace-nowrap cursor-pointer"
-            >
+            <button className="  bg-[#00bfa4] text-black px-6 py-2 font-semibold whitespace-nowrap cursor-pointer">
               Submit
             </button>
           </div>
@@ -114,10 +102,10 @@ export default function Footer() {
       </div>
 
       {/* Footer */}
-      <div className="text-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+      <div className=" text-sm">
+        <div className="max-w-7xl mx-auto px-4 py-10">
           {/* Main Footer Columns */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-6 sm:gap-8 xl:gap-12 mb-8 sm:mb-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-8 xl:gap-12 mb-12">
             {/* Column 1 - All Categories */}
             <div>
               <div className="font-semibold mb-3 uppercase text-base ">
@@ -186,7 +174,7 @@ export default function Footer() {
                 Send Us A Message
               </div>
               <hr className="w-9 border-t-2 border-[#03aa94] mb-4" />
-              <div className="text-white/85 mb-4">
+              <div className="text-gray-600 mb-4">
                 Feel free to contact us by phone, email or by our contact form
               </div>
               <div className="space-y-3 max-w-2xl">
@@ -232,8 +220,8 @@ export default function Footer() {
               Contact Details
             </div>
             <hr className="w-9 border-t-2 border-[#03aa94] mb-6" />
-            <div className="flex flex-col lg:flex-row gap-6 justify-between">
-              <div className="px-0 sm:px-6 py-4 sm:py-8 max-w-2xl">
+            <div className="flex flex-col lg:flex-row justify-between">
+              <div className=" px-6 py-8 max-w-2xl">
                 <div className="space-y-4">
                   {/* Address */}
                   <div className="flex items-start gap-3">
@@ -294,9 +282,9 @@ export default function Footer() {
                   </div>
                 </div>
               </div>
-              <div className="flex flex-col items-start lg:items-end gap-4 text-sm text-white/85">
-                <div className="pb-1 text-white text-lg sm:text-xl">Stay connected</div>
-                <div className="flex items-center gap-4 flex-wrap">
+              <div className="  items-center gap-4 text-sm text-gray-600">
+                <div className="pb-4 text-white text-xl">Stay connected</div>
+                <div className="flex items-center gap-4">
                   {Object.entries(socialPaths).map(([social, href]) => (
                     <Link
                       key={social}
@@ -314,27 +302,12 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Footer Bottom — copyright on the left, accepted payment
-              methods on the right per the Figma. Icons use brand glyphs
-              from react-icons/fa so we don't ship raw SVGs. */}
-          <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 items-center justify-between pt-8 border-t border-white/30">
-            <div className="text-xs text-white/80 text-center lg:text-left">
+          {/* Footer Bottom */}
+          <div className="flex flex-col lg:flex-row gap-6 items-center justify-between pt-8 border-t border-gray-600">
+            <div className="text-xs text-gray-600 text-center lg:text-left">
               © {new Date().getFullYear()} {COMPANY_INFO.name}, a Registered
               Tour Operator (No. {COMPANY_INFO.registrationNumber}), Trading as{" "}
               {COMPANY_INFO.tradingName}
-            </div>
-            <div
-              className="flex items-center gap-3 text-white"
-              aria-label="Accepted payment methods"
-            >
-              <FaCcVisa className="text-3xl" aria-label="Visa" />
-              <FaCcMastercard className="text-3xl" aria-label="Mastercard" />
-              <FaCcAmex className="text-3xl" aria-label="American Express" />
-              <FaCcPaypal className="text-3xl" aria-label="PayPal" />
-              <FaMobileAlt
-                className="text-2xl"
-                aria-label="Mobile money (Mvola / Airtel Money / Orange Money)"
-              />
             </div>
           </div>
         </div>

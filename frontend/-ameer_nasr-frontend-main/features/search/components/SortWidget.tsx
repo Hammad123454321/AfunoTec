@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-type SortOption = "lowest-price" | "best-sellers" | "top-rated";
+type SortOption = "lowest-price" | "best-sellers";
 
 type Props = {
   placeholder?: string;
@@ -34,7 +34,6 @@ export default function SortWidget({
   const sortButtons = [
     { id: "lowest-price" as SortOption, label: "Lowest Price" },
     { id: "best-sellers" as SortOption, label: "Best Sellers" },
-    { id: "top-rated" as SortOption, label: "Top Rated" },
   ];
 
   return (
