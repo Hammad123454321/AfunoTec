@@ -61,7 +61,7 @@ export default function ProductExplore({
       {activities.map((item) => (
         <div
           key={`${item.topText}-${item.bottomText}`}
-          className="relative group rounded-lg sm:rounded-xl overflow-hidden shadow-sm h-28 sm:h-32 md:h-36 lg:h-40"
+          className="relative group rounded-2xl sm:rounded-3xl overflow-hidden shadow-sm h-28 sm:h-32 md:h-36 lg:h-40"
         >
           <Image
             src={item.imgSrc}
