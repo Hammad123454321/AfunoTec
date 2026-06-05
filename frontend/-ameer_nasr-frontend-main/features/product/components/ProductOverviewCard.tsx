@@ -62,7 +62,7 @@ export function ProductOverviewCard({
 
   if (!isOverviewData(data)) {
     return (
-      <div className="relative overflow-hidden bg-white border border-gray-100 rounded-2xl z-50 mb-6">
+      <div className="relative overflow-hidden bg-white border border-gray-100 z-50 mb-6">
         <ProductAd data={data} />
       </div>
     );
@@ -78,7 +78,7 @@ export function ProductOverviewCard({
     data.offers && OFFER_STYLES[data.offers] ? OFFER_STYLES[data.offers] : null;
 
   return (
-    <div className="relative overflow-hidden bg-white border border-gray-200 rounded-lg z-10 flex flex-col md:flex-row mb-4 sm:mb-6">
+    <div className="relative overflow-hidden bg-white border border-gray-200 z-10 flex flex-col md:flex-row mb-4 sm:mb-6">
       {/* DiscountRibbon attaches to the whole card, not the image, so
           the corner fold is consistent regardless of carousel state. */}
       {!!data.discount && (

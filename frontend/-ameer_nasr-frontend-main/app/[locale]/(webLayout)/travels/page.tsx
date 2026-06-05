@@ -77,7 +77,7 @@ function DestinationCard({ destination }: { destination: DestinationTile }) {
   return (
     <Link
       href={destination.href}
-      className="relative h-44 sm:h-48 md:h-52 rounded-lg overflow-hidden group block"
+      className="relative h-44 sm:h-48 md:h-52 overflow-hidden group block"
     >
       <Image
         src={destination.imgSrc}

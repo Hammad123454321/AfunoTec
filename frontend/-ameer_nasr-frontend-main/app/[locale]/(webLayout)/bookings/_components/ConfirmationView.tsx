@@ -70,7 +70,7 @@ export default function ConfirmationView() {
             <div className="p-8 space-y-8">
               {/* Hotel Header */}
               <div className="flex gap-6 items-center">
-                <div className="relative w-20 h-20 rounded-xl overflow-hidden shadow-sm shrink-0">
+                <div className="relative w-20 h-20 overflow-hidden shadow-sm shrink-0">
                   <Image
                     src="https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=300&h=200&fit=crop"
                     alt="hotel"

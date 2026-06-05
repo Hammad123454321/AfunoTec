@@ -149,7 +149,7 @@ export default async function TravelCategoryPage({
         <SearchOptionTravel />
 
         {/* Hero banner with eyebrow + handwritten-style headline */}
-        <div className="relative mt-10 sm:mt-12 rounded-xl overflow-hidden h-44 sm:h-56 md:h-72">
+        <div className="relative mt-10 sm:mt-12 overflow-hidden h-44 sm:h-56 md:h-72">
           <Image
             src={content.bannerImage}
             alt={content.bannerHeadline}
