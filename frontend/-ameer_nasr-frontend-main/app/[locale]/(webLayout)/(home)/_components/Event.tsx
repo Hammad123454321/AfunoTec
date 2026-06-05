@@ -15,11 +15,11 @@ export default function EventSection() {
       title={
         <>
           <Image
-            src="/activitiesImage2.png"
+            src="/activity-icon.png"
             width={36}
             height={36}
-            alt="Tours Icon"
-            className=" "
+            alt="Corporate deal icon"
+            className="inline-block"
           />
           
           <TextPrimary500>Corporate deal</TextPrimary500>

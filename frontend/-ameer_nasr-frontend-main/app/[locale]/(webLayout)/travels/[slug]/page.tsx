@@ -174,7 +174,7 @@ export default async function TravelCategoryPage({
           {content.heading}
         </h2>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="mx-auto max-w-5xl grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
           {content.packages.map((pkg) => (
             <Link
               key={pkg.id}
@@ -182,19 +182,19 @@ export default async function TravelCategoryPage({
                 .toLowerCase()
                 .replace(/[^a-z0-9]+/g, "-")
                 .replace(/^-|-$/g, "")}`}
-              className="bg-white rounded-lg overflow-hidden border border-gray-200 group cursor-pointer hover:shadow-md transition-shadow block"
+              className="bg-white overflow-hidden border border-gray-200 group cursor-pointer hover:shadow-md transition-shadow block"
             >
-              <div className="relative h-32 sm:h-36 md:h-40">
+              <div className="relative h-24 sm:h-28 md:h-32">
                 <Image
                   src={pkg.imgSrc}
                   alt={pkg.name}
                   fill
-                  sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
+                  sizes="(min-width: 768px) 18vw, 45vw"
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
                 />
               </div>
-              <div className="px-3 py-3 text-center">
-                <span className="text-sm font-semibold text-gray-900">
+              <div className="px-2 py-2 text-center">
+                <span className="text-xs sm:text-sm font-medium text-gray-800">
                   {pkg.name}
                 </span>
               </div>
@@ -217,22 +217,22 @@ export default async function TravelCategoryPage({
           You might also like
         </h2>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+        <div className="mx-auto max-w-5xl grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
           {FALLBACK_RECOMMENDED.map((dest) => (
             <Link
               key={dest.name}
               href={dest.href}
-              className="relative h-40 sm:h-44 md:h-48 rounded-lg overflow-hidden group block"
+              className="relative h-28 sm:h-32 md:h-36 overflow-hidden group block"
             >
               <Image
                 src={dest.imgSrc}
                 alt={dest.name}
                 fill
-                sizes="(min-width: 768px) 25vw, 50vw"
+                sizes="(min-width: 768px) 22vw, 45vw"
                 className="object-cover transition-transform duration-500 group-hover:scale-110"
               />
-              <div className="absolute inset-x-0 bottom-0 bg-black/40 backdrop-blur-[1px] px-3 py-2.5">
-                <span className="text-white text-base sm:text-lg font-semibold drop-shadow">
+              <div className="absolute inset-x-0 bottom-0 bg-black/45 backdrop-blur-[1px] px-3 py-2">
+                <span className="text-white text-sm sm:text-base font-semibold drop-shadow">
                   {dest.name}
                 </span>
               </div>

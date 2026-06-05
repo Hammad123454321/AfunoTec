@@ -19,7 +19,7 @@ export function ProductCard({
   imageSize = "md",
 }: Omit<ProductCardType, "id">) {
   return (
-    <div className="relative h-full overflow-hidden flex flex-col gap-2 shadow border border-gray-100 group transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 hover:cursor-pointer rounded-xl">
+    <div className="relative h-full overflow-hidden flex flex-col gap-2 shadow border border-gray-100 group transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 hover:cursor-pointer">
       {discount && <DiscountBadge>{discount}</DiscountBadge>}
 
       <div

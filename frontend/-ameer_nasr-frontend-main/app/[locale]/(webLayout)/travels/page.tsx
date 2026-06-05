@@ -1,10 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Download } from "lucide-react";
+import { Download } from "lucide-react";
 import Container from "@/components/layout/Container";
 import Section from "@/components/layout/Section";
 import { TextPrimary500 } from "@/components/Text";
 import SearchOptionTravel from "./_components/SearchOptionTravel";
+import TwoDestinationsBanner from "./_components/TwoDestinationsBanner";
 
 // Figma source data. Once the backend lands these become rows in the
 // `travel_destinations` table.
@@ -118,55 +119,30 @@ export default function TravelsPage() {
         {/* Search bar */}
         <SearchOptionTravel />
 
-        {/* "Two Destinations, One Unforgettable Journey" banner with
-            left/right carousel arrows. Placeholder for the real banner
-            once the design team supplies the artwork. */}
-        <div className="relative mt-10 sm:mt-12 rounded-xl overflow-hidden h-44 sm:h-56 md:h-72">
-          <Image
-            src="/travels/img11.png"
-            alt="Two destinations banner"
-            fill
-            sizes="100vw"
-            className="object-cover"
-          />
-          <div className="absolute inset-0 bg-black/35" />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <h2 className="text-white text-xl sm:text-2xl md:text-3xl font-semibold tracking-tight text-center px-6">
-              Two Destinations, One Unforgettable Journey.
-            </h2>
-          </div>
-          <button
-            type="button"
-            aria-label="Previous"
-            className="absolute left-4 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 hover:bg-white flex items-center justify-center text-gray-700 shadow"
-          >
-            <ChevronLeft size={20} />
-          </button>
-          <button
-            type="button"
-            aria-label="Next"
-            className="absolute right-4 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 hover:bg-white flex items-center justify-center text-gray-700 shadow"
-          >
-            <ChevronRight size={20} />
-          </button>
-        </div>
+        {/* "Two Destinations, One Unforgettable Journey" carousel.
+            Client component so the prev/next arrows actually cycle
+            through slides on the frontend. */}
+        <TwoDestinationsBanner />
 
-        {/* Trending Packages — 4 small image tiles, no text */}
-        <div className="mt-10 sm:mt-14">
-          <h2 className="text-center text-xl sm:text-2xl font-semibold text-gray-900 mb-6 sm:mb-8">
+        {/* Trending Packages — 4 small thumbnail tiles, no text.
+            Figma sizes them roughly as 1/4 of the row at ~140px tall
+            on desktop; we use a max-width on the row + smaller tiles
+            so they don't bleed across the full container. */}
+        <div className="mt-8 sm:mt-10">
+          <h2 className="text-center text-lg sm:text-xl font-semibold text-gray-900 mb-4 sm:mb-6">
             Trending Packages
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+          <div className="mx-auto max-w-4xl grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
             {TRENDING_PACKAGES.map((item) => (
               <div
                 key={item.id}
-                className="relative h-32 sm:h-36 md:h-40 rounded-lg overflow-hidden group cursor-pointer"
+                className="relative h-20 sm:h-24 md:h-28 overflow-hidden group cursor-pointer"
               >
                 <Image
                   src={item.imgSrc}
                   alt={item.alt}
                   fill
-                  sizes="(min-width: 768px) 25vw, 50vw"
+                  sizes="(min-width: 768px) 16vw, 50vw"
                   className="object-cover transition-transform duration-500 group-hover:scale-110"
                 />
               </div>
@@ -188,8 +164,11 @@ export default function TravelsPage() {
           ))}
         </div>
 
-        {/* Exceptional Experiences download banner */}
-        <div className="mt-10 sm:mt-14 relative rounded-xl overflow-hidden h-44 sm:h-52 md:h-60">
+        {/* Exceptional Experiences download banner — italic eyebrow +
+            bold uppercase headline + small year badge + DOWNLOAD pill.
+            Per the Figma the heading block sits left-of-center and the
+            background is a darkened castle/landmark image. */}
+        <div className="mt-10 sm:mt-14 relative overflow-hidden h-44 sm:h-52 md:h-60">
           <Image
             src="/travels/img17.png"
             alt="Exceptional Experiences 2025-26"
@@ -197,24 +176,24 @@ export default function TravelsPage() {
             sizes="100vw"
             className="object-cover"
           />
-          <div className="absolute inset-0 bg-black/55" />
-          <div className="absolute inset-0 flex flex-col items-start justify-center gap-4 px-6 sm:px-10 md:px-16">
+          <div className="absolute inset-0 bg-black/60" />
+          <div className="absolute inset-0 flex flex-col items-start justify-center gap-3 px-6 sm:px-10 md:px-16 max-w-md">
             <div>
-              <p className="text-white italic font-light text-sm sm:text-base">
+              <p className="text-white italic font-light text-base sm:text-lg leading-none mb-1 [font-family:cursive]">
                 Exceptional
               </p>
-              <h2 className="text-white text-2xl sm:text-3xl md:text-4xl font-bold tracking-wider uppercase">
+              <h2 className="text-white text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-[0.15em] uppercase leading-none">
                 Experiences
               </h2>
-              <p className="text-white/80 text-xs sm:text-sm mt-1">
+              <p className="text-white/85 text-xs sm:text-sm mt-1 tracking-widest">
                 2025-26
               </p>
             </div>
             <button
               type="button"
-              className="bg-white text-gray-900 px-5 py-2 rounded-md text-sm font-bold hover:bg-gray-100 transition-colors inline-flex items-center gap-2"
+              className="bg-white text-gray-900 px-6 py-2 text-xs sm:text-sm font-bold uppercase tracking-wider hover:bg-gray-100 transition-colors inline-flex items-center gap-2"
             >
-              <Download size={14} /> DOWNLOAD
+              <Download size={14} /> Download
             </button>
           </div>
         </div>

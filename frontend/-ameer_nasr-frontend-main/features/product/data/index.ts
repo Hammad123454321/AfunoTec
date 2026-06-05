@@ -504,7 +504,7 @@ export const adData = {
   href: "#",
   title: "",
   description: "",
-  image: "/ad.png",
+  image: "/deals.png",
 };
 
 // Events Deals listing data — concerts, clubbing, festivals, and

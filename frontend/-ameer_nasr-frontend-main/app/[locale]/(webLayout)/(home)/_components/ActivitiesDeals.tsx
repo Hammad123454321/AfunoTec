@@ -71,10 +71,11 @@ export default function ActivitiesDeals() {
       title={
         <>
           <Image
-            src="/activitiesImage2.png"
+            src="/activity-icon.png"
             width={36}
             height={36}
-            alt="Tours Icon"
+            alt="Activity icon"
+            className="inline-block"
           />
           Things<TextPrimary500>to do</TextPrimary500>
         </>

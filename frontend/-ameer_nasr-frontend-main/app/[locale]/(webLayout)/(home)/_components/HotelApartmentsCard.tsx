@@ -16,11 +16,11 @@ export default function HotelApartmentsCard() {
       title={
         <>
           <Image
-            src="/hotelApartments.png"
+            src="/hotel-icon.png"
             width={36}
             height={36}
             alt="Hotel icon"
-            className=" "
+            className="inline-block"
           />
           Hotel, Apartments and <TextPrimary500>Lodges</TextPrimary500>
         </>

@@ -180,21 +180,21 @@ const ROOMS = [
   },
   {
     name: "Sea View Room",
-    image: "/deluxeRoom.png",
-    maxOccupancy: "2 Adults + 2 Children OR 3 Adults",
-    area: "28 m²",
-    bedding: "1 King size bed or 2 Twin beds",
-  },
-  {
-    name: "Partial Sea View Room (Lateral)",
     image: "/heroImage1.png",
     maxOccupancy: "2 Adults + 2 Children OR 3 Adults",
     area: "28 m²",
     bedding: "1 King size bed or 2 Twin beds",
   },
   {
+    name: "Partial Sea View Room (Lateral)",
+    image: "/resort2.png",
+    maxOccupancy: "2 Adults + 2 Children OR 3 Adults",
+    area: "28 m²",
+    bedding: "1 King size bed or 2 Twin beds",
+  },
+  {
     name: "Family Room",
-    image: "/standardRoom.png",
+    image: "/resort4.jpg",
     maxOccupancy: "4 Adults + 2 Children",
     area: "56 m²",
     bedding: "2 King size beds",
@@ -237,7 +237,7 @@ const ADDITIONAL_INFO = [
     image: "/additionalInfoImage.png",
     title: "Pool Area",
     description: "Four pools including an adults-only and kids' pool.",
-    span: "normal" as const,
+    span: "wide" as const,
   },
   {
     id: 3,
@@ -258,7 +258,7 @@ const ADDITIONAL_INFO = [
     image: "/additionalInfoImage.png",
     title: "Dining",
     description: "Buffet + A La Carte + 24h beach bar — all inclusive.",
-    span: "wide" as const,
+    span: "normal" as const,
   },
 ];
 

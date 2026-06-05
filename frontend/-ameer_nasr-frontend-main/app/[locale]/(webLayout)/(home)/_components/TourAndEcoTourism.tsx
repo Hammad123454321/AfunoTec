@@ -16,7 +16,7 @@ export default function ToursAndEcoTourism() {
       title={
         <>
           <Mountain
-            className="inline-block text-green-600"
+            className="inline-block text-rose-500"
             size={32}
             aria-hidden
           />
