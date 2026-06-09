@@ -278,7 +278,7 @@ const CartWithItems = ({
 
                 {/* Subtotal Column */}
                 <div className="col-span-1 text-right">
-                  <p className="text-red-600 font-semibold text-lg">
+                  <p className="text-red-600 font-semibold text-lg font-currency">
                     {item.currency}{" "}
                     {item.price.toLocaleString("en-US", {
                       minimumFractionDigits: 3,
@@ -335,8 +335,8 @@ const CartWithItems = ({
 
               <div className="space-y-3 mb-4">
                 <div className="flex justify-between text-2xl font-semibold text-gray-800">
-                  <span>{cartData.summary.currency}</span>
-                  <span>
+                  <span className="font-currency">{cartData.summary.currency}</span>
+                  <span className="font-currency">
                     {cartData.summary.total.toLocaleString("en-US", {
                       minimumFractionDigits: 3,
                     })}
@@ -345,7 +345,7 @@ const CartWithItems = ({
                 {cartData.summary.discount && (
                   <div className="flex justify-between text-sm text-gray-600">
                     <span>Discount:</span>
-                    <span>
+                    <span className="font-currency">
                       -{cartData.summary.currency} {cartData.summary.discount}
                     </span>
                   </div>

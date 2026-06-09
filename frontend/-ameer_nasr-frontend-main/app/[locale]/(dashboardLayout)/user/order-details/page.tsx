@@ -181,7 +181,7 @@ const OrderCard = ({
       <div className="px-4 pb-4 flex items-center justify-between">
         <div>
           <span className="text-sm text-gray-600">Price: </span>
-          <span className="font-semibold">
+          <span className="font-semibold font-currency">
             Rs {order.price.toLocaleString()}
           </span>
         </div>
@@ -336,7 +336,7 @@ const OrderDetailsModal = ({
                       <td className="p-3 border-r border-gray-300 bg-gray-50">
                         Subtotal:
                       </td>
-                      <td className="p-3">
+                      <td className="p-3 font-currency">
                         Rs {order.summary?.subtotal.toLocaleString()}
                       </td>
                     </tr>
@@ -344,7 +344,7 @@ const OrderDetailsModal = ({
                       <td className="p-3 border-r border-gray-300 bg-gray-50">
                         Order Discount:
                       </td>
-                      <td className="p-3">
+                      <td className="p-3 font-currency">
                         {order.summary?.discount || "------"}
                       </td>
                     </tr>
@@ -358,7 +358,7 @@ const OrderDetailsModal = ({
                       <td className="p-3 border-r border-gray-300 bg-gray-50">
                         Total:
                       </td>
-                      <td className="p-3 font-semibold">
+                      <td className="p-3 font-semibold font-currency">
                         Rs {order.summary?.total.toLocaleString()}
                       </td>
                     </tr>

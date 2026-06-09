@@ -232,7 +232,7 @@ const CompleteBooking: React.FC<CompleteBookingProps> = ({
                     </div>
                   )}
                 </div>
-                <div className="text-sm font-medium text-[#C41E3A] whitespace-nowrap ml-4">
+                <div className="font-currency text-sm font-medium text-[#C41E3A] whitespace-nowrap ml-4">
                   {option.price > 0
                     ? `${currency} ${option.price.toLocaleString()}`
                     : "Rate / Night"}
@@ -296,7 +296,7 @@ const CompleteBooking: React.FC<CompleteBookingProps> = ({
                     </div>
                   )}
                 </div>
-                <div className="text-sm font-medium text-[#C41E3A] whitespace-nowrap ml-4">
+                <div className="font-currency text-sm font-medium text-[#C41E3A] whitespace-nowrap ml-4">
                   {option.price > 0
                     ? `${currency} ${option.price.toLocaleString()}`
                     : "Rate / Night"}
@@ -325,7 +325,7 @@ const CompleteBooking: React.FC<CompleteBookingProps> = ({
       <div className="px-4 py-4 bg-white">
         <div className="flex justify-between items-center mb-4">
           <span className="text-base text-gray-900">Subtotal</span>
-          <span className="text-2xl font-semibold text-[#4CAF50]">
+          <span className="font-currency text-2xl font-semibold text-[#4CAF50]">
             {currency} {subtotal}
           </span>
         </div>

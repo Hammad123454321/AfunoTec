@@ -244,7 +244,9 @@ export default function BookingTable() {
                   let content: React.ReactNode = item[key] ?? "N/A";
 
                   if (key === "amount") {
-                    content = `Ar ${item.amount.toLocaleString()}`;
+                    content = (
+                      <span className="font-currency">{`Ar ${item.amount.toLocaleString()}`}</span>
+                    );
                   } else if (key === "star") {
                     content = (
                       <div className="flex items-center gap-1">

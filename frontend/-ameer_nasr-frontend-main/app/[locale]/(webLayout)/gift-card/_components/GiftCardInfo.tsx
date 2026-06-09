@@ -379,7 +379,7 @@ export default function GiftCardForm() {
             <div className="space-y-2.5 text-sm">
               <div className="flex justify-between items-start pb-2.5 border-b border-gray-200">
                 <span className="text-gray-600 text-xs">Gift Card</span>
-                <span className="text-red-500 font-semibold text-sm">
+                <span className="text-red-500 font-semibold text-sm font-currency">
                   AR {formData.amount || "00000"}
                 </span>
               </div>
@@ -459,7 +459,7 @@ export default function GiftCardForm() {
                       setCustomAmount("");
                       setFormData((prev) => ({ ...prev, amount: amt }));
                     }}
-                    className={`px-5 py-2 text-sm font-medium border-2 rounded transition-all ${formData.amount === amt && !customAmount
+                    className={`px-5 py-2 text-sm font-medium border-2 rounded transition-all font-currency ${formData.amount === amt && !customAmount
                       ? "border-green-600 bg-green-600 text-white"
                       : "border-green-600 text-green-600 hover:bg-green-50"
                       }`}

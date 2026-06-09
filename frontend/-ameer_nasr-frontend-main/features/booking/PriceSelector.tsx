@@ -168,7 +168,10 @@ export default function DynamicPricingSelector({
                       return (
                         <SelectItem key={qty} value={qty.toString()}>
                           {qty} {option.label}
-                          {qty > 1 ? "s" : ""} - {formatPrice(price)}
+                          {qty > 1 ? "s" : ""} -{" "}
+                          <span className="font-currency">
+                            {formatPrice(price)}
+                          </span>
                         </SelectItem>
                       );
                     })}
@@ -178,7 +181,7 @@ export default function DynamicPricingSelector({
 
               {/* Price Section */}
               <div className="w-24 text-right">
-                <p className="text-xl font-semibold text-primary-500">
+                <p className="font-currency text-xl font-semibold text-primary-500">
                   {selectedQuantity > 0
                     ? formatPrice(itemTotal)
                     : formatPrice(option.basePrice)}
@@ -211,7 +214,7 @@ export default function DynamicPricingSelector({
                       <span>
                         {count}x {opt.label}
                       </span>
-                      <span className="font-medium">{formatPrice(price)}</span>
+                      <span className="font-currency font-medium">{formatPrice(price)}</span>
                     </div>
                   );
                 })}
@@ -219,7 +222,7 @@ export default function DynamicPricingSelector({
           </div>
           <div className="text-right ml-8">
             <p className="text-sm text-gray-600 font-medium">Total Amount</p>
-            <p className="text-3xl font-semibold text-primary-500">
+            <p className="font-currency text-3xl font-semibold text-primary-500">
               {formatPrice(calculateTotal())}
             </p>
           </div>

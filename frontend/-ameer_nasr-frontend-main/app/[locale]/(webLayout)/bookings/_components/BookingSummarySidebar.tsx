@@ -107,14 +107,14 @@ export default function BookingSummarySidebar() {
                 <Info size={14} className="opacity-40" />
                 <span>Hotel fare</span>
               </div>
-              <span className="font-semibold text-gray-800">Ar 1,000</span>
+              <span className="font-semibold text-gray-800 font-currency">Ar 1,000</span>
             </div>
             <div className="flex justify-between items-center text-sm">
               <div className="flex items-center gap-2 text-[#2d9e3f]">
                 <Check size={14} />
                 <span className="font-medium">Discount applied</span>
               </div>
-              <span className="font-semibold text-[#2d9e3f]">- Ar 100</span>
+              <span className="font-semibold text-[#2d9e3f] font-currency">- Ar 100</span>
             </div>
             <div className="flex justify-between items-center text-sm">
               <span className="text-gray-400 pl-6">Taxes & fees</span>
@@ -137,7 +137,7 @@ export default function BookingSummarySidebar() {
               <p className="text-[11px] text-gray-400">All taxes included</p>
             </div>
             <div className="text-right">
-              <p className="text-[24px] font-serif font-black text-[#2d9e3f] leading-none">
+              <p className="text-[24px] font-serif font-black text-[#2d9e3f] leading-none font-currency">
                 Ar 900
               </p>
             </div>

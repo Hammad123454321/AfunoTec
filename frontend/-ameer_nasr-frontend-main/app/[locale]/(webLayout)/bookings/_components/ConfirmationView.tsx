@@ -150,6 +150,7 @@ export default function ConfirmationView() {
                     label: "Amount paid",
                     value: "Ar 900",
                     color: "text-[#2d9e3f]",
+                    money: true,
                   },
                 ].map((row, idx) => (
                   <div key={idx} className="flex justify-between items-center">
@@ -161,6 +162,7 @@ export default function ConfirmationView() {
                         "text-gray-800",
                         row.strong && "font-semibold",
                         row.color,
+                        row.money && "font-currency",
                       )}
                     >
                       {row.value}
@@ -299,11 +301,11 @@ export default function ConfirmationView() {
               <div className="space-y-4 text-[13px] font-medium pt-1">
                 <div className="flex justify-between items-center text-gray-400">
                   <span>Hotel fare</span>
-                  <span className="font-semibold text-gray-800">Ar 1,000</span>
+                  <span className="font-semibold text-gray-800 font-currency">Ar 1,000</span>
                 </div>
                 <div className="flex justify-between items-center text-[#2d9e3f]">
                   <span className="">Promo (WELCOME10)</span>
-                  <span className="font-semibold">- Ar 100</span>
+                  <span className="font-semibold font-currency">- Ar 100</span>
                 </div>
                 <div className="flex justify-between items-center text-gray-400">
                   <span>Taxes & fees</span>
@@ -323,7 +325,7 @@ export default function ConfirmationView() {
                     All taxes included
                   </p>
                 </div>
-                <p className="text-3xl font-serif font-semibold text-[#2d9e3f]">
+                <p className="text-3xl font-serif font-semibold text-[#2d9e3f] font-currency">
                   Ar 900
                 </p>
               </div>
@@ -430,7 +432,7 @@ export default function ConfirmationView() {
                   </p>
                 </div>
                 <div className="pt-6 border-t border-gray-50 flex justify-between items-center">
-                  <p className="text-xl font-serif font-semibold text-[#2d9e3f] leading-none">
+                  <p className="text-xl font-serif font-semibold text-[#2d9e3f] leading-none font-currency">
                     {card.price}
                   </p>
                   <div className="flex gap-0.5">

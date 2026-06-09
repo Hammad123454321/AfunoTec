@@ -168,7 +168,7 @@ export default function GuestInformation({ roomCount = 2, onSubmit }: Props) {
                 </div>
                 <span className="text-sm text-gray-600">HOTEL FARE</span>
               </div>
-              <span className="text-sm font-semibold text-gray-900">
+              <span className="text-sm font-semibold text-gray-900 font-currency">
                 1000AR
               </span>
             </div>
@@ -180,7 +180,7 @@ export default function GuestInformation({ roomCount = 2, onSubmit }: Props) {
                 </div>
                 <span className="text-sm text-[#F3AF1B]">DISCOUNT</span>
               </div>
-              <span className="text-sm font-semibold text-[#F3AF1B]">
+              <span className="text-sm font-semibold text-[#F3AF1B] font-currency">
                 -100AR
               </span>
             </div>
@@ -191,7 +191,7 @@ export default function GuestInformation({ roomCount = 2, onSubmit }: Props) {
             <span className="text-sm font-semibold text-gray-900">
               TOTAL PRICE
             </span>
-            <span className="text-lg font-semibold text-gray-900">0000</span>
+            <span className="text-lg font-semibold text-gray-900 font-currency">0000</span>
           </div>
 
           <div className="flex items-start gap-2 mt-4">

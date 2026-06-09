@@ -123,12 +123,12 @@ const WishlistCard = ({
           <div className="flex items-end justify-between">
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-2xl font-semibold text-gray-900">
+                <span className="text-2xl font-semibold text-gray-900 font-currency">
                   Rs {item.price.toLocaleString()}
                 </span>
                 {item.originalPrice && (
                   <>
-                    <span className="text-gray-400 line-through text-sm">
+                    <span className="text-gray-400 line-through text-sm font-currency">
                       Rs {item.originalPrice.toLocaleString()}
                     </span>
                     {item.discount && (

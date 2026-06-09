@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { DM_Sans, Inter } from "next/font/google";
+import { DM_Sans, Inter, Poppins } from "next/font/google";
 import { Suspense } from "react";
 
 import GoogleTranslateProvider from "@/components/GlobalTranslateProvider";
@@ -27,6 +27,13 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
+// Poppins is used platform-wide for currency / price values.
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-poppins",
+});
+
 export const metadata: Metadata = {
   title: {
     default: "AfunoTec — Madagascar Booking Platform",
@@ -48,7 +55,7 @@ export default async function RootLayout({
   return (
     <html
       lang={locale}
-      className={`${inter.className} ${inter.variable} ${sans.className} ${sans.variable}`}
+      className={`${inter.className} ${inter.variable} ${sans.className} ${sans.variable} ${poppins.variable}`}
       suppressHydrationWarning
     >
       <NextIntlClientProvider>

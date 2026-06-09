@@ -230,6 +230,7 @@ export default function MyBookingsPage() {
                     className={cn(
                       "text-2xl font-serif font-black",
                       stat.active ? "text-[#3496f8]" : "text-gray-900",
+                      stat.prefix && "font-currency",
                     )}
                   >
                     {stat.value}
@@ -362,7 +363,7 @@ export default function MyBookingsPage() {
                                 ? "Refunded"
                                 : "Total paid"}
                             </p>
-                            <p className="text-[24px] font-serif font-black text-[#2d9e3f]">
+                            <p className="text-[24px] font-serif font-black text-[#2d9e3f] font-currency">
                               {booking.price}
                             </p>
                           </div>

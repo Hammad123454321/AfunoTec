@@ -126,7 +126,7 @@ export default function PaymentInterface({ guestData }: { guestData: any }) {
                   </div>
                   <span className="text-sm text-gray-600">HOTEL FARE</span>
                 </div>
-                <span className="text-sm font-semibold text-gray-900">
+                <span className="text-sm font-semibold text-gray-900 font-currency">
                   1000AR
                 </span>
               </div>
@@ -138,7 +138,7 @@ export default function PaymentInterface({ guestData }: { guestData: any }) {
                   </div>
                   <span className="text-sm text-red-500">DISCOUNT</span>
                 </div>
-                <span className="text-sm font-semibold text-red-500">
+                <span className="text-sm font-semibold text-red-500 font-currency">
                   -100AR
                 </span>
               </div>
@@ -149,7 +149,7 @@ export default function PaymentInterface({ guestData }: { guestData: any }) {
               <span className="text-sm font-semibold text-gray-900">
                 TOTAL PRICE
               </span>
-              <span className="text-lg font-semibold text-gray-900">0000</span>
+              <span className="text-lg font-semibold text-gray-900 font-currency">0000</span>
             </div>
 
             {/* Terms Checkbox */}

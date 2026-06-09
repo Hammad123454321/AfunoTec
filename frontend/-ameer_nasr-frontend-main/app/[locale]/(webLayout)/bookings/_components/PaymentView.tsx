@@ -284,7 +284,7 @@ export default function PaymentView({
 
         <div className="text-center">
           <p className="text-[11px] text-gray-400 font-semibold uppercase tracking-widest">
-            Total to pay today: <span className="text-gray-800">Ar 900</span>
+            Total to pay today: <span className="text-gray-800 font-currency">Ar 900</span>
           </p>
         </div>
       </div>

@@ -50,7 +50,7 @@ export default function BookingCalender({
       {/* Price Header — white background, red price + grey strikethrough.
           Matches the Figma frame exactly. */}
       <div className="flex items-baseline flex-wrap gap-x-2 gap-y-1 px-4 py-3 border-b border-gray-200">
-        <span className="text-rose-600 font-bold text-lg leading-none">
+        <span className="font-currency text-rose-600 font-bold text-lg leading-none">
           From {currency} {new Intl.NumberFormat("en-US").format(basePrice)}/
         </span>
         <span className="text-gray-900 text-sm flex items-center gap-1 capitalize">
@@ -62,7 +62,7 @@ export default function BookingCalender({
           />
         </span>
         <span className="ml-auto text-gray-400 text-sm">
-          <span className="line-through">
+          <span className="font-currency line-through">
             {currency} {new Intl.NumberFormat("en-US").format(discountPrice)}/
           </span>{" "}
           <span className="capitalize">{durationType}</span>

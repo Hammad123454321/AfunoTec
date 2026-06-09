@@ -109,7 +109,7 @@ export function ProductCard({
           >
             As from{" "}
             <strong
-              className={cn("font-semibold", {
+              className={cn("font-currency font-semibold", {
                 "text-danger-400": overlay,
                 "text-danger-500": !overlay,
               })}

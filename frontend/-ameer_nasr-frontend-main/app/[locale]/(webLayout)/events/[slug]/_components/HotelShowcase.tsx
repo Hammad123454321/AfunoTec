@@ -30,7 +30,7 @@ export default function HotelShowcase() {
             <p className="text-[10px] sm:text-xs font-semibold text-gray-600 uppercase tracking-wider">
               Day Ticket
             </p>
-            <p className="text-base sm:text-lg font-bold text-rose-600 leading-none">
+            <p className="text-base sm:text-lg font-bold text-rose-600 leading-none font-currency">
               RS 100
             </p>
           </div>
@@ -38,7 +38,7 @@ export default function HotelShowcase() {
             <p className="text-[10px] sm:text-xs font-semibold text-gray-600 uppercase tracking-wider">
               Evening Ticket
             </p>
-            <p className="text-base sm:text-lg font-bold text-rose-600 leading-none">
+            <p className="text-base sm:text-lg font-bold text-rose-600 leading-none font-currency">
               RS 1000
             </p>
           </div>

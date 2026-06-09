@@ -245,7 +245,7 @@ export function Price({ amountUSD, className = "" }: PriceProps) {
   const { formatPrice } = useCurrency();
 
   return (
-    <span className={`font-semibold ${className}`}>
+    <span className={`font-currency font-semibold ${className}`}>
       {formatPrice(amountUSD)}
     </span>
   );

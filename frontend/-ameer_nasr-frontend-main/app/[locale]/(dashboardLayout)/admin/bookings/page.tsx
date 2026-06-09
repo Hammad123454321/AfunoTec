@@ -166,7 +166,9 @@ export default async function BookingTable() {
 
                   // Special formatting
                   if (key === "amount") {
-                    content = `$${item.amount.toLocaleString()}`;
+                    content = (
+                      <span className="font-currency">{`$${item.amount.toLocaleString()}`}</span>
+                    );
                   }
 
                   if (key === "star") {

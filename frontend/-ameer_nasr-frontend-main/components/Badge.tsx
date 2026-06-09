@@ -163,7 +163,10 @@ export function SaveValueBadge({
   if (amount <= 0) return null;
   return (
     <InlineBadge tone="bg-emerald-100 text-emerald-800" className={className}>
-      Save {currency} {amount.toLocaleString()}
+      Save{" "}
+      <span className="font-currency">
+        {currency} {amount.toLocaleString()}
+      </span>
     </InlineBadge>
   );
 }

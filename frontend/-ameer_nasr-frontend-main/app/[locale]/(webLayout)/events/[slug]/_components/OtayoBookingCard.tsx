@@ -26,7 +26,7 @@ export default function OtayoBookingCard({
       <div className="px-5 py-4 border-b border-gray-200">
         <p className="text-xs text-gray-500 mb-1">From</p>
         <div className="flex items-baseline gap-2">
-          <span className="text-rose-600 text-2xl font-bold leading-none">
+          <span className="text-rose-600 text-2xl font-bold leading-none font-currency">
             Rs {formatted}/
           </span>
           <span className="text-gray-700 text-sm">Person</span>

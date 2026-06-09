@@ -112,9 +112,11 @@ export function BookingDetailsModal({
               <Row
                 label="Amount"
                 value={
-                  typeof data.summary.amount === "number"
-                    ? `Ar ${data.summary.amount.toLocaleString()}`
-                    : data.summary.amount
+                  <span className="font-currency">
+                    {typeof data.summary.amount === "number"
+                      ? `Ar ${data.summary.amount.toLocaleString()}`
+                      : data.summary.amount}
+                  </span>
                 }
               />
             )}

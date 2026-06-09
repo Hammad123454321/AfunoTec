@@ -197,7 +197,9 @@ export default function ServiceListPage() {
                 {tableHeader.map(({ key }) => {
                   let content: React.ReactNode = item[key] ?? "N/A";
                   if (key === "price") {
-                    content = `Ar ${item.price.toLocaleString()}`;
+                    content = (
+                      <span className="font-currency">{`Ar ${item.price.toLocaleString()}`}</span>
+                    );
                   } else if (key === "star") {
                     content = (
                       <div className="flex items-center gap-1">

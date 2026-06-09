@@ -211,14 +211,14 @@ export function ProductOverviewCard({
           <div className="text-left sm:text-right shrink-0">
             <div className="flex items-baseline sm:justify-end gap-2">
               <span className="text-gray-500 text-xs">As From</span>
-              <span className="text-base sm:text-lg font-bold leading-none text-[#1f7be0]">
+              <span className="font-currency text-base sm:text-lg font-bold leading-none text-[#1f7be0]">
                 Ar {data.price.toLocaleString()}
               </span>
             </div>
             {data.oldPrice > data.price && (
               <div className="flex items-baseline sm:justify-end gap-2 mt-1">
                 <span className="text-gray-400 text-xs">As From</span>
-                <span className="text-rose-500 text-xs line-through">
+                <span className="font-currency text-rose-500 text-xs line-through">
                   Ar {data.oldPrice.toLocaleString()}
                 </span>
               </div>

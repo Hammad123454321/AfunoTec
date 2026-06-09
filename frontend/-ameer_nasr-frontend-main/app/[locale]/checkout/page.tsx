@@ -270,7 +270,7 @@ export default function CheckoutPage() {
 
               <div className="pt-5 mt-5 border-t flex justify-between text-lg font-semibold text-gray-900">
                 <span>Total</span>
-                <span>
+                <span className="font-currency">
                   {BOOKING.currencyLabel} {totals.total.toLocaleString()}
                 </span>
               </div>
@@ -513,10 +513,10 @@ function SummaryRow({
       <span
         className={
           tone === "discount"
-            ? "text-emerald-700 font-medium"
+            ? "text-emerald-700 font-medium font-currency"
             : tone === "muted"
               ? "text-gray-500"
-              : "text-gray-900 font-medium"
+              : "text-gray-900 font-medium font-currency"
         }
       >
         {value}
