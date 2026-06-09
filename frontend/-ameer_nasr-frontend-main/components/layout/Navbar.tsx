@@ -97,27 +97,32 @@ export default function Navbar() {
             </div>
 
             {/* Right Side Actions */}
-            <div className="flex items-center gap-2 md:gap-3">
-              {/* Play Store - Desktop only */}
-              <div className="hidden md:block shrink-0">
+            <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3">
+              {/* Play Store badge — needs real estate the md tablet
+                  doesn't have once locale + currency are visible, so
+                  only show from lg upward. Mobile users find the
+                  store link in the footer. */}
+              <div className="hidden lg:block shrink-0">
                 <PlayStore />
               </div>
 
               <span
-                className="text-gray-300 hidden md:inline"
+                className="text-gray-300 hidden lg:inline"
                 aria-hidden="true"
               >
                 |
               </span>
 
-              {/* Locale & Currency - Desktop only */}
-              <div className="hidden md:flex items-center gap-2">
+              {/* Locale & Currency — desktop / large-tablet only.
+                  On smaller screens they appear at the top of the
+                  collapsible mobile menu instead. */}
+              <div className="hidden lg:flex items-center gap-2">
                 <LocaleSwitcher />
                 <CurrencySelector />
               </div>
 
               <span
-                className="text-gray-300 hidden md:inline"
+                className="text-gray-300 hidden lg:inline"
                 aria-hidden="true"
               >
                 |
@@ -155,7 +160,7 @@ export default function Navbar() {
               {/* Holiday Offers - Desktop only */}
               <Link
                 href="#"
-                className="bg-sky-500 text-white px-3 py-2 rounded text-sm font-medium hover:bg-sky-600 transition-colors hidden lg:inline-block whitespace-nowrap h-9 flex items-center"
+                className="bg-sky-500 text-white px-3 rounded text-sm font-medium hover:bg-sky-600 transition-colors hidden lg:inline-flex whitespace-nowrap h-9 items-center"
               >
                 Holiday Offers
               </Link>

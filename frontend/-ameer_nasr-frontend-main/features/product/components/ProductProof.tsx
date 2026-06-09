@@ -19,7 +19,7 @@ export function WhyStayHere({
   return (
     <div className="w-full">
       {/* Title */}
-      <h2 className="mb-8 text-2xl md:text-4xl font-semibold">
+      <h2 className="mb-8 text-2xl md:text-4xl font-bold">
         <span className="uppercase">{title} </span>
         <span className="text-green-600 uppercase underline decoration-green-500 decoration-4 underline-offset-8">
           {highlightText}

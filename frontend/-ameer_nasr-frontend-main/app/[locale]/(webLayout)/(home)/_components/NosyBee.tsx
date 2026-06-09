@@ -15,11 +15,11 @@ export default function NosyBee() {
       title={
         <>
           <Image
-            src="/toursImage.png"
+            src="/tour-icon.png"
             width={36}
             height={36}
-            alt="Tours Icon"
-            className=" "
+            alt="Nosy Be icon"
+            className="inline-block"
           />
           Nosy
           <TextPrimary500>Be</TextPrimary500>

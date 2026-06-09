@@ -19,20 +19,24 @@ export function ProductCard({
   imageSize = "md",
 }: Omit<ProductCardType, "id">) {
   return (
-    <div className="relative h-full overflow-hidden flex flex-col gap-2 shadow border border-gray-100 group transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 hover:cursor-pointer rounded-xl">
+    <div className="relative h-full overflow-hidden flex flex-col gap-2 shadow border border-gray-100 group transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 hover:cursor-pointer">
       {discount && <DiscountBadge>{discount}</DiscountBadge>}
 
       <div
         className={cn(
-          `overflow-hidden relative w-full`,
-          imageSize === "md" && "h-54",
-          imageSize === "lg" && "h-54 lg:h-96"
+          "overflow-hidden relative w-full",
+          // mobile-first: keep the card image proportional to viewport
+          // width so it never explodes on phones, then step up at
+          // larger breakpoints. `lg` cards (featured tiles in
+          // FlashOffer) get extra height once there is room.
+          imageSize === "md" && "h-44 sm:h-48 md:h-52 lg:h-56",
+          imageSize === "lg" && "h-48 sm:h-56 md:h-64 lg:h-80 xl:h-96",
         )}
       >
         <Image
           className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
-          width={480}
-          height={380}
+          fill
+          sizes="(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw"
           src={image}
           alt={title}
         />

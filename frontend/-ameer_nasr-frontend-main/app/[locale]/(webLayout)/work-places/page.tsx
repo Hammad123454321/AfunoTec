@@ -1,32 +1,45 @@
 import Container from "@/components/layout/Container";
-import ProductExplore from "@/features/product/components/ProductExplore";
+import ProductExplore, {
+  type ExploreCard,
+} from "@/features/product/components/ProductExplore";
 import Section from "@/components/layout/Section";
 import { TextPrimary500 } from "@/components/Text";
 import SortWidget from "@/features/search/components/SortWidget";
-import { adData, productOverviewData } from "@/features/product/data";
+import { workplacesOverviewData } from "@/features/product/data";
 import { ProductOverviewCard } from "@/features/product/components/ProductOverviewCard";
+import crypto from "crypto";
 import WorkPlaceFilterSidebar from "./_components/WorkPlaceFilter";
 import SearchOptionWorkPlace from "./_components/SearchOptionWorkPlace";
 import WorkPlaceFilterSidebarMobile from "./_components/WorkPlaceFilterSidebarMobile";
 
-export default function Page() {
-  const productData = productOverviewData.flatMap((item, index) => {
-    if (index >= 4 && index % 4 === 0) {
-      return [adData, item];
-    }
-    return item;
-  });
+const WORKPLACE_TILES: ReadonlyArray<ExploreCard> = [
+  { topText: "", bottomText: "Conference room", imgSrc: "/explore/family.png" },
+  { topText: "", bottomText: "Office rental", imgSrc: "/explore/weekend.png" },
+  { topText: "", bottomText: "Meeting room", imgSrc: "/explore/inclusive.png" },
+  { topText: "", bottomText: "Co-working", imgSrc: "/explore/meal.png" },
+];
+
+export default function WorkPlacesPage() {
   return (
     <Section
       title={
-        <div className="underline uppercase">
-          Workplaces <TextPrimary500>& Hubs</TextPrimary500>
+        <div className="uppercase">
+          <span className="underline decoration-emerald-500 decoration-2 underline-offset-8">
+            Workplaces
+          </span>{" "}
+          <TextPrimary500>
+            <span className="underline decoration-emerald-500 decoration-2 underline-offset-8">
+              & Hubs
+            </span>
+          </TextPrimary500>
         </div>
       }
     >
       <Container>
         <SearchOptionWorkPlace />
-        <ProductExplore />
+
+        <ProductExplore activities={WORKPLACE_TILES} variant="amber" />
+
         <div className="flex flex-col lg:flex-row gap-6 mt-6">
           <div className="flex gap-4 z-50">
             {/* Mobile Filter - Only shows on mobile */}
@@ -41,16 +54,14 @@ export default function Page() {
           <div className="flex-1 flex flex-col gap-6 z-30">
             <SortWidget />
 
-            {productData.map((item) => {
-              return (
-                <div
-                  key={crypto.randomUUID()}
-                  className="flex flex-col gap-2 shadow transition-transform duration-300 "
-                >
-                  <ProductOverviewCard data={item} />
-                </div>
-              );
-            })}
+            {workplacesOverviewData.map((item) => (
+              <div
+                key={crypto.randomUUID()}
+                className="flex flex-col gap-2 transition-transform duration-300"
+              >
+                <ProductOverviewCard data={item} />
+              </div>
+            ))}
           </div>
         </div>
       </Container>

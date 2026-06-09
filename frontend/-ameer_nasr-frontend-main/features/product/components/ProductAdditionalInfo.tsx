@@ -1,4 +1,3 @@
-import Heading from "@/components/Heading";
 import Container from "@/components/layout/Container";
 import Section from "@/components/layout/Section";
 import { TextPrimary500 } from "@/components/Text";
@@ -26,20 +25,28 @@ export function AdditionalProductInfo({
   return (
     <Section
       title={
-        <TextPrimary500>
-          {title} {highlightText}
-        </TextPrimary500>
+        // Figma: dark first word + green highlight + thin emerald
+        // underline directly below the heading. The inline-block wrap
+        // keeps the underline tight to the text width.
+        <span className="inline-block border-b-2 border-emerald-500 pb-1.5">
+          <span className="text-gray-900">{title}</span>{" "}
+          <TextPrimary500>{highlightText}</TextPrimary500>
+        </span>
       }
       align="left"
       id="additional-information"
     >
       <Container>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+        {/* 6-col base grid. `wide` cards take half the row (col-span-3),
+            `normal` cards take a third (col-span-2). The Figma "2 on
+            top + 3 on bottom" layout falls out naturally when callers
+            pass [wide, wide, normal, normal, normal]. */}
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-3 md:gap-4">
           {cards.map((card) => (
             <div
               key={card.id}
-              className={`relative h-[400px] rounded overflow-hidden group ${
-                card.span === "wide" ? "md:col-span-2" : ""
+              className={`relative h-44 sm:h-52 md:h-60 overflow-hidden group ${
+                card.span === "wide" ? "md:col-span-3" : "md:col-span-2"
               }`}
             >
               {/* Image */}
@@ -51,15 +58,13 @@ export function AdditionalProductInfo({
                 sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
               />
 
-              {/* Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-
-              {/* Content */}
-              <div className="absolute bottom-0 space-y-2 left-0 right-0 p-4 md:p-6 bg-gradient-to-t from-black/90 to-transparent text-white">
-                <Heading as="h3" size="h5" weight="normal">
+              {/* Bottom-anchored content panel — matches the Figma
+                  semi-transparent dark band with title + short copy. */}
+              <div className="absolute inset-x-0 bottom-0 bg-black/55 px-3 py-2 text-white">
+                <h3 className="text-sm font-semibold leading-tight">
                   {card.title}
-                </Heading>
-                <p className="text-sm md:text-base leading-relaxed text-gray-200">
+                </h3>
+                <p className="text-[11px] leading-snug text-gray-100/90 line-clamp-2">
                   {card.description}
                 </p>
               </div>

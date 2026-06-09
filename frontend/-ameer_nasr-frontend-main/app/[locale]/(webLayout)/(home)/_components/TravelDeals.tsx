@@ -1,5 +1,5 @@
 import * as React from "react";
-import Image from "next/image";
+import { Plane } from "lucide-react";
 import Section from "@/components/layout/Section";
 import { TextPrimary500 } from "@/components/Text";
 import Container from "@/components/layout/Container";
@@ -15,12 +15,10 @@ export default function TravelDeals() {
       id="travel-deals"
       title={
         <>
-          <Image
-            src="/toursImage.png"
-            width={36}
-            height={36}
-            alt="Tours Icon"
-            className=" "
+          <Plane
+            className="inline-block text-rose-500 -rotate-12"
+            size={32}
+            aria-hidden
           />
           <TextPrimary500>Travel </TextPrimary500>deals
         </>

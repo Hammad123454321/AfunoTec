@@ -1,17 +1,15 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Send, MessageCircle, X } from "lucide-react";
+import { Send, Sparkles, X, Instagram, Mail, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import SocialIconForChatbox from "./SocialIconForChatbox";
-import { Facebook, Globe, Instagram, Mail, MessageSquare, Phone } from 'lucide-react'
 import { BsMessenger, BsWhatsapp } from "react-icons/bs";
 import { SiLivechat } from "react-icons/si";
-import { TbMessageChatbot, TbMessageChatbotFilled } from "react-icons/tb";
+import { onChatOpen } from "@/lib/chatEvents";
 
 type ChatMessage = {
   id: string;
@@ -32,6 +30,10 @@ export default function Chatbot() {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, isOpen]);
+
+  // Open the chat panel when any other component fires
+  // `openChat()` (e.g. the GetInTouch "Chat Now!" tile).
+  useEffect(() => onChatOpen(() => setIsOpen(true)), []);
 
   async function handleSend() {
     if (!input.trim()) return;
@@ -68,15 +70,29 @@ export default function Chatbot() {
 
   return (
     <div className="fixed bottom-4 right-4 z-50">
-      {/* Floating Chat Button */}
+      {/* Floating AI Assistant Button with the Figma "Questions? Chat
+          with us!" pill anchored to its left so it reads as a single
+          unit on desktop. The pill collapses on phones (<sm) to keep
+          the corner clean. */}
       {!isOpen && (
-        <Button
-          size="icon"
-          onClick={() => setIsOpen(true)}
-          className="rounded-full w-14 h-14 shadow-lg"
-        >
-          <MessageCircle className="w-6 h-6" />
-        </Button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setIsOpen(true)}
+            className="hidden sm:flex items-center rounded-full bg-white shadow-md ring-1 ring-gray-200 px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50 transition-colors"
+            aria-label="Questions? Chat with us"
+          >
+            Questions? <span className="text-emerald-600 ml-1">Chat with us!</span>
+          </button>
+          <Button
+            size="icon"
+            onClick={() => setIsOpen(true)}
+            className="rounded-full w-14 h-14 shadow-lg bg-gradient-to-br from-primary-500 to-emerald-500 hover:from-primary-600 hover:to-emerald-600"
+            aria-label="Open AI assistant"
+          >
+            <Sparkles className="w-6 h-6 text-white" aria-hidden />
+          </Button>
+        </div>
       )}
 
       {/* Chat Window */}

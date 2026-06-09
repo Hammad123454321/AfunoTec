@@ -87,6 +87,8 @@ services:
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api.baodeals.com/api/v1}
+        NEXT_PUBLIC_GA_ID: ${NEXT_PUBLIC_GA_ID:-}
+        NEXT_PUBLIC_FB_PIXEL_ID: ${NEXT_PUBLIC_FB_PIXEL_ID:-}
     container_name: ameer_nasr_frontend
     restart: unless-stopped
     depends_on:
@@ -96,6 +98,8 @@ services:
       PORT: 3000
       HOSTNAME: 0.0.0.0
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api.baodeals.com/api/v1}
+      NEXT_PUBLIC_GA_ID: ${NEXT_PUBLIC_GA_ID:-}
+      NEXT_PUBLIC_FB_PIXEL_ID: ${NEXT_PUBLIC_FB_PIXEL_ID:-}
     # FRONTEND_BIND controls the host port binding. Defaults to localhost:3000
     # (for when nginx fronts it). Set FRONTEND_BIND=0.0.0.0:80 in .env to
     # expose the container directly on http://<vps-ip>/ before nginx + the

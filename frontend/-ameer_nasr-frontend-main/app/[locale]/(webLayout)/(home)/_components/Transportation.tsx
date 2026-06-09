@@ -16,11 +16,11 @@ export default function Transportation() {
       title={
         <>
           <Image
-            src="/transportationImage.png"
+            src="/transport-icon.png"
             width={36}
             height={36}
             alt="Transportation icon"
-            className=" "
+            className="inline-block"
           />
           Transportation & <TextPrimary500>Car Rental</TextPrimary500>
         </>

@@ -9,9 +9,12 @@ const nextConfig: NextConfig = {
   images: {
     domains: ["images.unsplash.com", "i.pravatar.cc", "upload.wikimedia.org"],
   },
-  typescript:{
+  typescript: {
     ignoreBuildErrors: true,
-  }
+  },
+  turbopack: {
+    root: process.cwd(),
+  },
 };
 
 const withNextIntl = createNextIntlPlugin();

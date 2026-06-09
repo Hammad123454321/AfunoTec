@@ -4,14 +4,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ProductCardSkeleton() {
   return (
-    <div className="relative h-full overflow-hidden flex flex-col gap-2 shadow border border-gray-100 rounded-xl p-2 animate-in fade-in duration-300">
+    <div className="relative h-full overflow-hidden flex flex-col gap-2 shadow border border-gray-100 p-2 animate-in fade-in duration-300">
       {/* Discount Badge */}
       <div className="absolute top-3 left-3">
         <Skeleton className="h-5 w-16 rounded-full" />
       </div>
 
       {/* Image */}
-      <div className="overflow-hidden relative w-full h-54 lg:h-64 rounded-lg">
+      <div className="overflow-hidden relative w-full h-54 lg:h-64">
         <Skeleton className="h-full w-full" />
       </div>
 

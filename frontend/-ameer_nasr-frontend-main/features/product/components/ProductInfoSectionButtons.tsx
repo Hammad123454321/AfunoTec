@@ -43,9 +43,9 @@ export default function ProductInfoSectionButtons({ items }: Props) {
   };
 
   return (
-    <div className="sticky top-0 z-50 bg-white border-y border-gray-100 shadow-sm backdrop-blur-md bg-white/90">
+    <div className="sticky top-0 z-40 bg-[#1f7be0] shadow-sm">
       <Container>
-        <div className="flex flex-wrap overflow-x-auto scrollbar-hide py-3 gap-6 md:gap-12 no-scrollbar">
+        <div className="flex overflow-x-auto scrollbar-hide no-scrollbar">
           {items.map((item, index) => {
             const id = item.toLowerCase().replace(/\s+/g, "-");
             const isActive = activeSegment === id;
@@ -56,16 +56,13 @@ export default function ProductInfoSectionButtons({ items }: Props) {
                 href={`#${id}`}
                 onClick={(e) => handleClick(e, id)}
                 className={cn(
-                  "relative py-1 text-sm md:text-base font-semibold whitespace-nowrap transition-all duration-300 cursor-pointer",
+                  "relative px-4 sm:px-6 py-3 text-xs sm:text-sm font-semibold uppercase tracking-wider whitespace-nowrap transition-colors cursor-pointer",
                   isActive
-                    ? "text-[#2d9e3f]"
-                    : "text-gray-400 hover:text-gray-600",
+                    ? "bg-white text-[#1f7be0]"
+                    : "text-white/90 hover:text-white hover:bg-white/10",
                 )}
               >
                 {item}
-                {isActive && (
-                  <span className="absolute left-0 right-1 -bottom-[13px] h-1 bg-[#2d9e3f] rounded-full" />
-                )}
               </a>
             );
           })}

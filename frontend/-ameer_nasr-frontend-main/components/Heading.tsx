@@ -29,12 +29,14 @@ export default function Heading({
 }: HeadingProps) {
   const Comp = asChild ? Slot : Component;
 
+  // Mobile-first scale. Lower bound tuned for ~360px viewports so long
+  // words ("Adventures", "Transportation") never break mid-character.
   const sizes: Record<string, string> = {
-    h1: "text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-tight",
-    h2: "text-3xl sm:text-4xl md:text-5xl leading-snug",
-    h3: "text-2xl sm:text-3xl md:text-4xl leading-snug",
-    h4: "text-xl sm:text-2xl md:text-3xl leading-normal",
-    h5: "text-base md:text-lg lg:text-[1.375rem] leading-[1.75rem]",
+    h1: "text-[1.875rem] sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl leading-tight",
+    h2: "text-2xl sm:text-3xl md:text-4xl lg:text-5xl leading-snug",
+    h3: "text-xl sm:text-2xl md:text-3xl lg:text-4xl leading-snug",
+    h4: "text-lg sm:text-xl md:text-2xl lg:text-3xl leading-normal",
+    h5: "text-base md:text-lg lg:text-[1.375rem] leading-[1.6]",
     h6: "text-sm sm:text-base md:text-lg leading-normal",
     sm: "text-sm",
   };
@@ -45,7 +47,7 @@ export default function Heading({
       normal: "font-normal",
       medium: "font-medium",
       semibold: "font-semibold",
-      bold: "font-semibold",
+      bold: "font-bold",
     }[weight],
     {
       left: "text-left",

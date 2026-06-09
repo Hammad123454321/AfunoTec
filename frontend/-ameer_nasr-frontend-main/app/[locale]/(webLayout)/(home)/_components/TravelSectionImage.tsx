@@ -7,7 +7,7 @@ const TravelSectionImage = () => {
       <img 
         src='/travelImg.jpg'
         alt="Travel Section"
-        className="w-[1370px] h-[270px] bg-cover mx-auto rounded-2xl"
+        className="w-[1370px] h-[270px] bg-cover mx-auto"
       />
     </div>
   )

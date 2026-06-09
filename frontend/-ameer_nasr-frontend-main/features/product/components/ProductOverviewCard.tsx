@@ -1,14 +1,55 @@
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { ProductAdType, ProductOverviewDataType } from "../types/product.types";
-import { DiscountBadge } from "@/components/Badge";
 import { ProductCarousel } from "./ProductCarousel";
-import Heading from "@/components/Heading";
-import { TextPrimary500 } from "@/components/Text";
-import { LucideMapPin, Star, StarHalf, Heart, Flame } from "lucide-react";
+import { LucideMapPin, Star, Heart } from "lucide-react";
 import ProductAd from "./ProductAd";
 import ProductLink from "./ProductLink";
 import Link from "next/link";
+import DiscountRibbon from "@/components/DiscountRibbon";
+
+/**
+ * Map of the `offers` string returned by the product feed to its
+ * visual treatment. Matches the Figma stays-listing chips exactly.
+ */
+const OFFER_STYLES: Record<string, string> = {
+  "Limited Offer": "bg-emerald-500 text-white",
+  "Low Room": "bg-rose-500 text-white",
+  "Save 10% Off": "bg-amber-500 text-white",
+};
+
+/** Render five stars filled per the rating value (supports half stars). */
+function StarRating({ rating, size = 14 }: { rating: number; size?: number }) {
+  return (
+    <div className="flex items-center gap-0.5" aria-label={`${rating} out of 5`}>
+      {Array.from({ length: 5 }).map((_, i) => {
+        const filled = i < Math.floor(rating);
+        const half = !filled && i < rating;
+        return (
+          <span key={i} className="relative inline-block leading-none">
+            <Star
+              size={size}
+              className="fill-gray-200 text-gray-200"
+              aria-hidden
+            />
+            {(filled || half) && (
+              <span
+                className="absolute inset-y-0 left-0 overflow-hidden"
+                style={{ width: filled ? "100%" : "50%" }}
+              >
+                <Star
+                  size={size}
+                  className="fill-yellow-400 text-yellow-400"
+                  aria-hidden
+                />
+              </span>
+            )}
+          </span>
+        );
+      })}
+    </div>
+  );
+}
 
 export function ProductOverviewCard({
   data,
@@ -19,67 +60,37 @@ export function ProductOverviewCard({
     d: ProductOverviewDataType | ProductAdType,
   ): d is ProductOverviewDataType => "images" in d && "badges" in d;
 
-  // Function to render star rating
-  const renderStarRating = (rating: number) => {
-    const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 >= 0.5;
-
-    for (let i = 0; i < fullStars; i++) {
-      stars.push(
-        <Star
-          key={`full-${i}`}
-          size={16}
-          className="fill-yellow-400 text-yellow-400"
-        />,
-      );
-    }
-
-    if (hasHalfStar) {
-      stars.push(
-        <StarHalf
-          key="half"
-          size={16}
-          className="fill-yellow-400 text-yellow-400"
-        />,
-      );
-    }
-
-    const emptyStars = 5 - stars.length;
-    for (let i = 0; i < emptyStars; i++) {
-      stars.push(
-        <Star key={`empty-${i}`} size={16} className="text-gray-300" />,
-      );
-    }
-
-    return stars;
-  };
-
   if (!isOverviewData(data)) {
     return (
-      <div className="relative overflow-hidden bg-white border border-gray-100 rounded-2xl z-50 mb-6">
+      <div className="relative overflow-hidden bg-white border border-gray-100 z-50 mb-6">
         <ProductAd data={data} />
       </div>
     );
   }
 
+  // Figma tag row: first badge is the highlighted orange "category" chip
+  // (e.g. WATER & SEA), middle badges are pipe-separated gray text, and
+  // the `location` value is pinned to the right as a blue chip (East /
+  // North / South / etc).
+  const [primaryBadge, ...inlineBadges] = data.badges;
+  const locationBadge = data.location;
+  const offerStyle =
+    data.offers && OFFER_STYLES[data.offers] ? OFFER_STYLES[data.offers] : null;
+
   return (
-    <div className="relative overflow-hidden bg-white border border-gray-100 rounded-2xl z-50 flex flex-col md:flex-row mb-6">
+    <div className="relative overflow-hidden bg-white border border-gray-200 z-10 flex flex-col md:flex-row mb-4 sm:mb-6">
+      {/* DiscountRibbon attaches to the whole card, not the image, so
+          the corner fold is consistent regardless of carousel state. */}
+      {!!data.discount && (
+        <DiscountRibbon
+          percentage={Number(data.discount)}
+          label="Off"
+          tone="rose"
+        />
+      )}
+
       {/* Image Section */}
-      <div className="relative w-full md:w-[200px] lg:w-[220px] shrink-0">
-        {/* Heart Button */}
-        <button className="absolute top-3 left-3 z-20 w-9 h-9 flex items-center justify-center bg-white/80 backdrop-blur-sm rounded-full shadow-sm hover:bg-white transition-colors">
-          <Heart size={18} className="text-gray-400 group-hover:text-red-500" />
-        </button>
-
-        {/* Discount Badge */}
-        {data.discount && (
-          <div className="absolute top-0 right-0 z-20 bg-red-500 text-white px-3 py-1.5 font-semibold text-sm rounded-bl-xl shadow-md">
-            {data.discount}% <br />{" "}
-            <span className="font-normal text-xs uppercase">off</span>
-          </div>
-        )}
-
+      <div className="relative w-full md:w-[230px] lg:w-[260px] shrink-0 h-44 sm:h-52 md:h-auto md:min-h-[200px]">
         <ProductCarousel
           items={data.images.map((image, index) => ({
             image,
@@ -90,84 +101,128 @@ export function ProductOverviewCard({
           showNavigation={false}
           autoplay={true}
           renderItem={(item) => (
-            <div className="relative h-[180px] md:h-full min-h-[180px]">
+            <div className="relative w-full h-44 sm:h-52 md:h-full md:min-h-[200px] overflow-hidden">
               <Image
                 className="w-full h-full object-cover"
-                width={380}
-                height={380}
+                fill
+                sizes="(min-width: 768px) 260px, 100vw"
                 src={item.image}
                 alt={data.title}
               />
+
+              {/* Heart Button — pinned over each slide so it stays in
+                  the same place as the user pages through the carousel. */}
+              <button
+                type="button"
+                className="absolute top-3 left-3 z-20 w-8 h-8 flex items-center justify-center bg-white/85 backdrop-blur-sm rounded-full shadow-sm hover:bg-white transition-colors"
+                aria-label="Save to wishlist"
+              >
+                <Heart
+                  size={16}
+                  className="text-gray-500 hover:text-rose-500"
+                />
+              </button>
             </div>
           )}
         />
       </div>
 
       {/* Content Section */}
-      <div className="flex-1 flex flex-col p-4 md:p-6 bg-white min-w-0">
+      <div className="flex-1 flex flex-col p-3 sm:p-4 md:p-5 bg-white min-w-0">
         {/* Rating */}
-        <div className="flex items-center gap-0.5 mb-2 shrink-0">
-          {renderStarRating(data.rating)}
+        <div className="flex items-center gap-1.5 mb-2 shrink-0">
+          <StarRating rating={data.rating} />
+          {typeof data.score === "number" && (
+            <span className="text-xs text-gray-500 font-medium">
+              {data.rating.toFixed(1)}
+            </span>
+          )}
         </div>
 
         {/* Title */}
         <div className="mb-2">
           <ProductLink href={`${data.id}`}>
-            <h3 className="text-base text-left md:text-xl font-serif text-[#00a6e6] hover:underline transition-all leading-tight">
+            <h3 className="text-base sm:text-lg md:text-xl text-left uppercase font-semibold text-[#1f7be0] hover:underline transition-all leading-snug">
               {data.title}
             </h3>
           </ProductLink>
         </div>
 
-        {/* Features/Badges */}
-        <div className="flex flex-wrap items-center gap-2 mb-4 text-xs text-gray-500 font-medium">
-          <span className="bg-[#fff9e6] text-[#b38f00] px-3 py-1 rounded font-semibold uppercase text-[10px] tracking-wider">
-            HOTELS
-          </span>
-          {data.badges.map((badge, idx) => (
-            <div key={idx} className="flex items-center gap-2">
-              <span className="h-4 w-px bg-gray-300" />
+        {/* Tag row: highlighted primary chip + pipe-separated badges +
+            blue location chip pinned right. */}
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-3 text-xs">
+          {primaryBadge && (
+            <span className="bg-amber-400 text-amber-900 px-2.5 py-1 rounded font-bold uppercase text-[10px] tracking-wider">
+              {primaryBadge}
+            </span>
+          )}
+          {inlineBadges.map((badge, idx) => (
+            <span
+              key={idx}
+              className="flex items-center gap-2 text-gray-500"
+            >
+              <span className="text-gray-300" aria-hidden>
+                |
+              </span>
               <span>{badge}</span>
-            </div>
+            </span>
           ))}
+          {locationBadge && (
+            <span className="ml-auto bg-[#1f7be0] text-white px-3 py-0.5 rounded text-[11px] font-semibold">
+              {locationBadge}
+            </span>
+          )}
         </div>
 
         {/* Description */}
-        <p className="text-gray-600 text-left text-sm leading-relaxed mb-4 line-clamp-2">
+        <p className="text-gray-600 text-left text-sm leading-relaxed mb-3 line-clamp-2">
           {data.description}
         </p>
 
-        {/* Guaranteed Status */}
-        <div className="flex items-center gap-1.5 text-[#2d9e4f] font-medium text-sm mb-6">
-          <Flame size={16} className="fill-[#e63946] text-[#e63946]" />
-          <span>Lowest price guaranteed for this deal</span>
-        </div>
-
-        {/* Footer */}
-        <div className=" flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2 text-gray-500 text-sm">
-            <LucideMapPin size={16} className="text-gray-400" />
-            <span>{data.location || "South"}</span>
-            <span className="text-gray-300 mx-1">·</span>
+        {/* Footer: pin + location + Show map + stars + numeric rating
+            + status chip; price column on the right. */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-auto">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-gray-600 text-sm">
+            <LucideMapPin size={14} className="text-gray-400 shrink-0" />
+            <span className="text-gray-700">{locationBadge},</span>
             <Link
               target="_blank"
               href={`${data.mapLink}`}
-              className="text-blue-500 hover:underline"
+              className="text-[#1f7be0] underline hover:opacity-80"
             >
               Show map
             </Link>
+            <StarRating rating={data.rating} size={13} />
+            <span className="text-xs font-semibold text-gray-700">
+              {data.rating.toFixed(1)}
+            </span>
+            {offerStyle && (
+              <span
+                className={cn(
+                  "ml-2 px-3 py-1 rounded text-xs font-semibold",
+                  offerStyle,
+                )}
+              >
+                {data.offers}
+              </span>
+            )}
           </div>
 
-          <div className="text-right">
-            <p className="text-gray-400 text-xs mb-1 font-medium">As from</p>
-            <div className="flex flex-col">
-              <div className="flex items-baseline justify-end gap-1 text-[#2d9e4f]">
-                <span className="text-xl md:text-xl font-serif font-semibold leading-none">
-                  MGA {data.price.toLocaleString()}
+          <div className="text-left sm:text-right shrink-0">
+            <div className="flex items-baseline sm:justify-end gap-2">
+              <span className="text-gray-500 text-xs">As From</span>
+              <span className="text-base sm:text-lg font-bold leading-none text-[#1f7be0]">
+                Ar {data.price.toLocaleString()}
+              </span>
+            </div>
+            {data.oldPrice > data.price && (
+              <div className="flex items-baseline sm:justify-end gap-2 mt-1">
+                <span className="text-gray-400 text-xs">As From</span>
+                <span className="text-rose-500 text-xs line-through">
+                  Ar {data.oldPrice.toLocaleString()}
                 </span>
               </div>
-              <p className="text-gray-400 text-xs font-medium mt-1">/night</p>
-            </div>
+            )}
           </div>
         </div>
       </div>

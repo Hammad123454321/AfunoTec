@@ -70,7 +70,7 @@ export default function ConfirmationView() {
             <div className="p-8 space-y-8">
               {/* Hotel Header */}
               <div className="flex gap-6 items-center">
-                <div className="relative w-20 h-20 rounded-xl overflow-hidden shadow-sm shrink-0">
+                <div className="relative w-20 h-20 overflow-hidden shadow-sm shrink-0">
                   <Image
                     src="https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=300&h=200&fit=crop"
                     alt="hotel"
@@ -148,7 +148,7 @@ export default function ConfirmationView() {
                   { label: "Payment method", value: "MVola · 034 XX XXX XX" },
                   {
                     label: "Amount paid",
-                    value: "MGA 900",
+                    value: "Ar 900",
                     color: "text-[#2d9e3f]",
                   },
                 ].map((row, idx) => (
@@ -299,11 +299,11 @@ export default function ConfirmationView() {
               <div className="space-y-4 text-[13px] font-medium pt-1">
                 <div className="flex justify-between items-center text-gray-400">
                   <span>Hotel fare</span>
-                  <span className="font-semibold text-gray-800">MGA 1,000</span>
+                  <span className="font-semibold text-gray-800">Ar 1,000</span>
                 </div>
                 <div className="flex justify-between items-center text-[#2d9e3f]">
                   <span className="">Promo (WELCOME10)</span>
-                  <span className="font-semibold">- MGA 100</span>
+                  <span className="font-semibold">- Ar 100</span>
                 </div>
                 <div className="flex justify-between items-center text-gray-400">
                   <span>Taxes & fees</span>
@@ -324,7 +324,7 @@ export default function ConfirmationView() {
                   </p>
                 </div>
                 <p className="text-3xl font-serif font-semibold text-[#2d9e3f]">
-                  MGA 900
+                  Ar 900
                 </p>
               </div>
 
@@ -389,21 +389,21 @@ export default function ConfirmationView() {
             {
               title: "Snorkeling day trip",
               loc: "North coast · Half day · Equipment included",
-              price: "MGA 1,200",
+              price: "Ar 1,200",
               img: "https://images.unsplash.com/photo-1563220475-7140f09a5658?w=400&h=300&fit=crop",
               stars: 5,
             },
             {
               title: "Dolphin watching cruise",
               loc: "Tamarin Bay · Morning · Breakfast on board",
-              price: "MGA 2,500",
+              price: "Ar 2,500",
               img: "https://images.unsplash.com/photo-1582967788606-a171c1080cb0?w=400&h=300&fit=crop",
               stars: 4,
             },
             {
               title: "Shanti Spa — 90 min ritual",
               loc: "In-hotel · Hammam + massage + sauna",
-              price: "MGA 3,800",
+              price: "Ar 3,800",
               img: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=400&h=300&fit=crop",
               stars: 5,
             },

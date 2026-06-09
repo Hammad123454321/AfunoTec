@@ -59,7 +59,16 @@ const flashOffers: ProductCardType[] = [
   },
 ];
 
-const gridItems = ["md:col-span-2", "", "", ""];
+// Featured-card spans need to be honored only when the parent grid
+// actually has enough columns to keep the layout balanced. At `md`
+// (2 cols) a col-span-2 fills a whole row by itself which is fine; at
+// `lg` (3 cols) the featured card spans 2/3 and the next card fills
+// the remaining slot — that's the design intent. Anything narrower
+// (single column) needs no span at all.
+function featuredSpan(index: number): string {
+  if (index !== 0) return "";
+  return "md:col-span-2 lg:col-span-2";
+}
 
 export default function FlashOffer() {
   return (
@@ -73,9 +82,9 @@ export default function FlashOffer() {
       description="Limited-time deals you don't want to miss. Book before they're gone."
     >
       <Container>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {flashOffers.map((offer, index) => (
-            <div key={offer.id} className={cn(gridItems[index])}>
+            <div key={offer.id} className={cn(featuredSpan(index))}>
               <ProductCard
                 title={offer.title}
                 description={offer.description}

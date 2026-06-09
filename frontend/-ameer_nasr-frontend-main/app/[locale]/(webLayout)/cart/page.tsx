@@ -313,7 +313,7 @@ const CartWithItems = ({
         </div>
 
         {/* Bottom Section with Image and Summary */}
-        <div className="relative rounded-lg overflow-hidden shadow-lg">
+        <div className="relative overflow-hidden shadow-lg">
           {/* Background Image */}
           <div
             className="h-96 bg-cover bg-center relative"

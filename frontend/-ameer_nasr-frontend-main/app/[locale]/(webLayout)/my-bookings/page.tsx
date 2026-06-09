@@ -55,7 +55,7 @@ const allBookings: Booking[] = [
     dates: "02 Feb — 04 Feb 2026",
     details: "2 guests · 1 room",
     location: "North, Mauritius",
-    price: "MGA 900",
+    price: "Ar 900",
     status: "confirmed",
     paymentMethod: "Paid via MVola",
     image:
@@ -70,7 +70,7 @@ const allBookings: Booking[] = [
     dates: "20 Mar — 25 Mar 2026",
     details: "2 guests · 1 room",
     location: "South, Mauritius",
-    price: "MGA 6,200",
+    price: "Ar 6,200",
     status: "upcoming",
     paymentMethod: "Paid via Credit Card",
     image:
@@ -85,7 +85,7 @@ const allBookings: Booking[] = [
     dates: "10 Jan — 14 Jan 2026",
     details: "2 guests · 1 room",
     location: "South, Mauritius",
-    price: "MGA 8,200",
+    price: "Ar 8,200",
     status: "completed",
     paymentMethod: "Paid via MVola",
     image:
@@ -100,7 +100,7 @@ const allBookings: Booking[] = [
     dates: "05 Dec — 08 Dec 2025",
     details: "2 guests · 1 room",
     location: "North, Mauritius",
-    price: "MGA 4,100",
+    price: "Ar 4,100",
     status: "cancelled",
     paymentMethod: "Refund processed",
     image:
@@ -217,7 +217,7 @@ export default function MyBookingsPage() {
                     .length,
                   sub: "Stays completed",
                 },
-                { label: "TOTAL SPENT", value: "MGA 42,500", prefix: true },
+                { label: "TOTAL SPENT", value: "Ar 42,500", prefix: true },
               ].map((stat, idx) => (
                 <div
                   key={idx}
