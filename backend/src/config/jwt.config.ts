@@ -8,4 +8,7 @@ export const jwtConfig = registerAs('jwt', () => ({
   otpTtlSeconds: parseInt(process.env.OTP_TTL_SECONDS ?? '300', 10),
   otpLength: parseInt(process.env.OTP_LENGTH ?? '6', 10),
   otpMaxAttempts: parseInt(process.env.OTP_MAX_ATTEMPTS ?? '5', 10),
+  // Account lockout after repeated failed logins.
+  lockoutThreshold: parseInt(process.env.AUTH_LOCKOUT_THRESHOLD ?? '5', 10),
+  lockoutDurationSeconds: parseInt(process.env.AUTH_LOCKOUT_DURATION ?? '900', 10),
 }));
