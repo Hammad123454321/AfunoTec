@@ -67,7 +67,16 @@ async function main(): Promise<void> {
 
   await prisma.user.upsert({
     where: { email: adminEmail },
-    update: {},
+    // Re-assert the admin password/role on every seed so a drifted or locked
+    // admin is always recoverable with the configured credentials.
+    update: {
+      name: adminName,
+      passwordHash: adminHash,
+      role: UserRole.ADMIN,
+      isActive: true,
+      failedLoginCount: 0,
+      lockedUntil: null,
+    },
     create: {
       email: adminEmail,
       name: adminName,
