@@ -1,9 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Cairo } from "next/font/google";
 import Container from "@/components/layout/Container";
 import Section from "@/components/layout/Section";
 import { TextPrimary500 } from "@/components/Text";
 import SearchOptionTravel from "../_components/SearchOptionTravel";
+
+const cairo = Cairo({
+  subsets: ["latin", "arabic"],
+});
 
 // Per-category Figma 2 content: hero banner copy + main package
 // grid + recommended-other-destinations footer. The data lookup is
@@ -132,6 +137,7 @@ export default async function TravelCategoryPage({
 
   return (
     <Section
+      className="max-w-[1315px] mx-auto w-full px-4 sm:px-6 lg:px-8"
       title={
         <div className="uppercase">
           <span className="underline decoration-emerald-500 decoration-2 underline-offset-8">
@@ -170,7 +176,9 @@ export default async function TravelCategoryPage({
         </div>
 
         {/* Section heading + 4-col destination grid */}
-        <h2 className="text-center text-xl sm:text-2xl font-semibold text-gray-900 mt-10 sm:mt-14 mb-6 sm:mb-8">
+        <h2
+          className={`${cairo.className} text-center text-xl sm:text-2xl md:text-3xl lg:text-[35px] font-semibold text-gray-900 mt-10 sm:mt-14 sm:mb-10 mb-6`}
+        >
           {content.heading}
         </h2>
 
@@ -182,19 +190,19 @@ export default async function TravelCategoryPage({
                 .toLowerCase()
                 .replace(/[^a-z0-9]+/g, "-")
                 .replace(/^-|-$/g, "")}`}
-              className="bg-white overflow-hidden border border-gray-200 group cursor-pointer hover:shadow-md transition-shadow block"
+              className="bg-white overflow-hidden border border-gray-200 group cursor-pointer hover:shadow-md transition-shadow flex flex-col w-full max-w-[160px] h-[145px] sm:max-w-[176px] sm:h-[160px] md:max-w-[200px] md:h-[181px] lg:max-w-[248px] lg:h-[225px] xl:max-w-[312px] xl:h-[283px]"
             >
-              <div className="relative h-24 sm:h-28 md:h-32">
+              <div className="relative flex-1 min-h-0">
                 <Image
                   src={pkg.imgSrc}
                   alt={pkg.name}
                   fill
-                  sizes="(min-width: 768px) 18vw, 45vw"
+                  sizes="(min-width: 1280px) 312px, (min-width: 1024px) 248px, (min-width: 768px) 200px, (min-width: 640px) 176px, 160px"
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
                 />
               </div>
-              <div className="px-2 py-2 text-center">
-                <span className="text-xs sm:text-sm font-medium text-gray-800">
+              <div className="px-2 py-4 text-center shrink-0 bg-[#EFEFEF]">
+                <span className="text-xl lg:text-lg md:text-base sm:text-sm lg:font-semibold font-medium text-gray-800">
                   {pkg.name}
                 </span>
               </div>
@@ -203,17 +211,19 @@ export default async function TravelCategoryPage({
         </div>
 
         {/* Load More button */}
-        <div className="flex justify-center mt-8 sm:mt-10">
+        <div className="flex justify-center mt-8 sm:mt-16">
           <button
             type="button"
-            className="bg-[#22A628] hover:bg-[#1d8e22] text-white px-8 py-2.5 rounded font-semibold text-sm transition-colors"
+            className="bg-[#22A628] hover:bg-[#1d8e22] text-white px-8 py-2.5 rounded-[10px] font-semibold text-[16px] transition-colors"
           >
             Load More
           </button>
         </div>
 
         {/* You might also like */}
-        <h2 className="text-center text-xl sm:text-2xl font-semibold text-gray-900 mt-12 sm:mt-16 mb-6 sm:mb-8">
+        <h2
+          className={`${cairo.className} text-center text-xl sm:text-2xl md:text-3xl lg:text-[35px] font-semibold text-gray-900 md:mt-26 mt-16 mb-6 sm:mb-11`}
+        >
           You might also like
         </h2>
 
@@ -222,17 +232,19 @@ export default async function TravelCategoryPage({
             <Link
               key={dest.name}
               href={dest.href}
-              className="relative h-28 sm:h-32 md:h-36 overflow-hidden group block"
+              className="relative overflow-hidden group block w-full max-w-[160px] h-[145px] sm:max-w-[176px] sm:h-[160px] md:max-w-[200px] md:h-[181px] lg:max-w-[248px] lg:h-[225px] xl:max-w-[312px] xl:h-[283px]"
             >
               <Image
                 src={dest.imgSrc}
                 alt={dest.name}
                 fill
-                sizes="(min-width: 768px) 22vw, 45vw"
+                sizes="(min-width: 1280px) 312px, (min-width: 1024px) 248px, (min-width: 768px) 200px, (min-width: 640px) 176px, 160px"
                 className="object-cover transition-transform duration-500 group-hover:scale-110"
               />
-              <div className="absolute inset-x-0 bottom-0 bg-black/45 backdrop-blur-[1px] px-3 py-2">
-                <span className="text-white text-sm sm:text-base font-semibold drop-shadow">
+              <div className="absolute inset-x-0 bottom-0 bg-black/45 backdrop-blur-[3px] px-3 py-2">
+                <span
+                  className={`${cairo.className} text-white text-xs sm:text-sm md:text-base lg:text-lg xl:text-2xl font-semibold drop-shadow`}
+                >
                   {dest.name}
                 </span>
               </div>

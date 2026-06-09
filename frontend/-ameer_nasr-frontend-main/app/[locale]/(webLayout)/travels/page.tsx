@@ -1,11 +1,16 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Cairo } from "next/font/google";
 import { Download } from "lucide-react";
 import Container from "@/components/layout/Container";
 import Section from "@/components/layout/Section";
 import { TextPrimary500 } from "@/components/Text";
 import SearchOptionTravel from "./_components/SearchOptionTravel";
 import TwoDestinationsBanner from "./_components/TwoDestinationsBanner";
+
+const cairo = Cairo({
+  subsets: ["latin", "arabic"],
+});
 
 // Figma source data. Once the backend lands these become rows in the
 // `travel_destinations` table.
@@ -77,7 +82,8 @@ function DestinationCard({ destination }: { destination: DestinationTile }) {
   return (
     <Link
       href={destination.href}
-      className="relative h-44 sm:h-48 md:h-52 overflow-hidden group block"
+      className="relative w-full max-w-[312px] h-[210px] sm:h-[240px] md:h-[283px] overflow-hidden group block"
+ 
     >
       <Image
         src={destination.imgSrc}
@@ -90,8 +96,10 @@ function DestinationCard({ destination }: { destination: DestinationTile }) {
       />
       {/* Semi-transparent label panel pinned to the top of each tile,
           per the Figma. */}
-      <div className="absolute inset-x-0 top-0 bg-black/35 backdrop-blur-[1px] px-3 py-2.5">
-        <span className="text-white text-base sm:text-lg font-semibold drop-shadow">
+      <div className="absolute inset-x-0 top-1 bg-black/35 backdrop-blur-[1px] px-3 py-2.5">
+        <span
+          className={`${cairo.className} text-white text-lg sm:text-2xl md:text-3xl drop-shadow`}
+        >
           {destination.name}
         </span>
       </div>
@@ -102,6 +110,7 @@ function DestinationCard({ destination }: { destination: DestinationTile }) {
 export default function TravelsPage() {
   return (
     <Section
+      className="max-w-[1321px] mx-auto w-full px-4 sm:px-6 lg:px-8"
       title={
         <div className="uppercase">
           <span className="underline decoration-emerald-500 decoration-2 underline-offset-8">
@@ -128,30 +137,35 @@ export default function TravelsPage() {
             Figma sizes them roughly as 1/4 of the row at ~140px tall
             on desktop; we use a max-width on the row + smaller tiles
             so they don't bleed across the full container. */}
-        <div className="mt-8 sm:mt-10">
-          <h2 className="text-center text-lg sm:text-xl font-semibold text-gray-900 mb-4 sm:mb-6">
+        <div className="mt-8 sm:mt-12">
+          <h2
+            className={`${cairo.className} text-center text-lg sm:text-xl md:text-3xl font-semibold text-gray-900 mb-8 sm:mb-11`}
+          >
             Trending Packages
           </h2>
           <div className="w-full grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
             {TRENDING_PACKAGES.map((item) => (
               <div
                 key={item.id}
-                className="relative h-20 sm:h-24 md:h-28 overflow-hidden group cursor-pointer"
+                className="relative h-20 sm:h-24 md:h-28 lg:w-[312px] lg:h-[283px] overflow-hidden group cursor-pointer"
+                style={{ maxWidth: "100%" }}
               >
                 <Image
                   src={item.imgSrc}
                   alt={item.alt}
                   fill
-                  sizes="(min-width: 768px) 16vw, 50vw"
+                  sizes="(min-width: 1280px) 312px, (min-width: 768px) 25vw, 50vw"
                   className="object-cover transition-transform duration-500 group-hover:scale-110"
                 />
               </div>
             ))}
           </div>
+    
         </div>
 
         {/* Main destination grid — 4 columns × 4 rows = 16 tiles */}
-        <div className="mt-10 sm:mt-14 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="mt-10 sm:mt-14 lg:mt-[168px] grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+   
           {DESTINATIONS.map((dest) => (
             <DestinationCard key={`${dest.name}-${dest.href}`} destination={dest} />
           ))}
@@ -168,7 +182,7 @@ export default function TravelsPage() {
             bold uppercase headline + small year badge + DOWNLOAD pill.
             Per the Figma the heading block sits left-of-center and the
             background is a darkened castle/landmark image. */}
-        <div className="mt-10 sm:mt-14 relative overflow-hidden h-44 sm:h-52 md:h-60">
+        <div className="mt-16 sm:24 md:mt-40 relative overflow-hidden h-44 sm:h-52 md:h-60">
           <Image
             src="/travels/img17.png"
             alt="Exceptional Experiences 2025-26"
