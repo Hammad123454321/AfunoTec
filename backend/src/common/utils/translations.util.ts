@@ -45,10 +45,18 @@ export function resolveLocalizedField(
   field: string,
   canonical?: string | null,
 ): string | undefined {
-  const localized = resolveTranslation<Record<string, unknown>>(translations, locale);
-  const value = localized && typeof localized === 'object' ? localized[field] : undefined;
-  if (typeof value === 'string' && value.length > 0) return value;
-  return canonical ?? undefined;
+  // Prefer the requested locale; otherwise fall back to the canonical column
+  // value rather than an arbitrary other language. (The canonical name is
+  // typically authored in English, so it is the right fallback for `en`.)
+  const pick = (loc: Locale): string | undefined => {
+    const localized = translations?.[loc];
+    const value =
+      localized && typeof localized === 'object'
+        ? (localized as Record<string, unknown>)[field]
+        : undefined;
+    return typeof value === 'string' && value.length > 0 ? value : undefined;
+  };
+  return pick(locale) ?? canonical ?? pick(DEFAULT_LOCALE);
 }
 
 /** Shallow-merges incoming translation patches over the existing map. */
