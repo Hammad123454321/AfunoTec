@@ -12,8 +12,16 @@ import { redisConfig } from './config/redis.config';
 import { storageConfig } from './config/storage.config';
 import { mailConfig } from './config/mail.config';
 import { paymentsConfig } from './config/payments.config';
+import { fxConfig } from './config/fx.config';
 
 import { PrismaModule } from './common/prisma/prisma.module';
+import { AuthCoreModule } from './common/auth-core/auth-core.module';
+import { AppCacheModule } from './common/cache/app-cache.module';
+import { IdempotencyModule } from './common/idempotency/idempotency.module';
+import { MailModule } from './common/mail/mail.module';
+import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
+import { RolesGuard } from './common/guards/roles.guard';
+import { OwnershipGuard } from './common/guards/ownership.guard';
 import { HealthModule } from './modules/health/health.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
@@ -49,6 +57,7 @@ import { AiModule } from './modules/ai/ai.module';
         storageConfig,
         mailConfig,
         paymentsConfig,
+        fxConfig,
       ],
     }),
 
@@ -77,6 +86,10 @@ import { AiModule } from './modules/ai/ai.module';
 
     // Cross-cutting
     PrismaModule,
+    AuthCoreModule,
+    AppCacheModule,
+    IdempotencyModule,
+    MailModule,
 
     // Feature modules
     HealthModule,
@@ -102,9 +115,22 @@ import { AiModule } from './modules/ai/ai.module';
     AiModule,
   ],
   providers: [
+    // Guard order matters: rate-limit → authenticate → role → ownership.
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: OwnershipGuard,
     },
   ],
 })

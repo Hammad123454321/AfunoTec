@@ -7,10 +7,12 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
+import { ErrorCode, defaultCodeForStatus } from '../errors/error-code.enum';
 
 interface ErrorResponseBody {
   success: false;
   statusCode: number;
+  code: ErrorCode;
   message: string;
   errors?: unknown;
   path: string;
@@ -29,6 +31,7 @@ export class GlobalHttpExceptionFilter implements ExceptionFilter {
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message = 'Internal server error';
     let errors: unknown;
+    let code: ErrorCode | undefined;
 
     if (exception instanceof HttpException) {
       status = exception.getStatus();
@@ -39,6 +42,7 @@ export class GlobalHttpExceptionFilter implements ExceptionFilter {
         const r = res as Record<string, unknown>;
         message = (r.message as string) ?? exception.message;
         errors = r.errors ?? r.error;
+        if (typeof r.code === 'string') code = r.code as ErrorCode;
       }
     } else if (exception instanceof Error) {
       message = exception.message;
@@ -48,6 +52,7 @@ export class GlobalHttpExceptionFilter implements ExceptionFilter {
     const body: ErrorResponseBody = {
       success: false,
       statusCode: status,
+      code: code ?? defaultCodeForStatus(status),
       message,
       errors,
       path: request.url,

@@ -513,6 +513,7 @@ model Booking {
   promoCode         PromoCode?    @relation(fields: [promoCodeId], references: [id])
   giftCardId        String?
   giftCard          GiftCard?     @relation(fields: [giftCardId], references: [id])
+  idempotencyKey    String?       @unique
   notes             String?
   status            BookingStatus @default(PENDING)
   confirmedAt       DateTime?
@@ -827,6 +828,28 @@ model AuditLog {
   @@index([actorId])
   @@index([createdAt])
   @@map("audit_logs")
+}
+
+// -----------------------------------------------------------------------------
+//  Idempotency (durable request de-duplication for /bookings, /payments/initiate)
+// -----------------------------------------------------------------------------
+
+model IdempotencyKey {
+  id           String    @id @default(cuid())
+  key          String
+  userId       String?
+  method       String
+  path         String
+  requestHash  String    // sha256 of the normalized request body
+  statusCode   Int?
+  responseBody Json?
+  lockedAt     DateTime?
+  completedAt  DateTime?
+  createdAt    DateTime  @default(now())
+
+  @@unique([key, userId, path])
+  @@index([createdAt])
+  @@map("idempotency_keys")
 }
 
 // -----------------------------------------------------------------------------

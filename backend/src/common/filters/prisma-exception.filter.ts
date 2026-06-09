@@ -1,6 +1,7 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpStatus, Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { Request, Response } from 'express';
+import { defaultCodeForStatus } from '../errors/error-code.enum';
 
 @Catch(
   Prisma.PrismaClientKnownRequestError,
@@ -49,6 +50,7 @@ export class PrismaExceptionFilter implements ExceptionFilter {
     response.status(status).json({
       success: false,
       statusCode: status,
+      code: defaultCodeForStatus(status),
       message,
       path: request.url,
       timestamp: new Date().toISOString(),
