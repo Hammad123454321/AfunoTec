@@ -42,6 +42,7 @@ import { AdsModule } from './modules/ads/ads.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { I18nModule } from './modules/i18n/i18n.module';
+import { NewsletterModule } from './modules/newsletter/newsletter.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { AiModule } from './modules/ai/ai.module';
 
@@ -113,6 +114,7 @@ import { AiModule } from './modules/ai/ai.module';
     AdminModule,
     AnalyticsModule,
     I18nModule,
+    NewsletterModule,
     AuditModule,
     AiModule,
   ],
