@@ -31,6 +31,7 @@ import { TagsModule } from './modules/tags/tags.module';
 import { ServicesModule } from './modules/services/services.module';
 import { AvailabilityModule } from './modules/availability/availability.module';
 import { CartModule } from './modules/cart/cart.module';
+import { WishlistModule } from './modules/wishlist/wishlist.module';
 import { BookingsModule } from './modules/bookings/bookings.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { PromotionsModule } from './modules/promotions/promotions.module';
@@ -101,6 +102,7 @@ import { AiModule } from './modules/ai/ai.module';
     ServicesModule,
     AvailabilityModule,
     CartModule,
+    WishlistModule,
     BookingsModule,
     PaymentsModule,
     PromotionsModule,

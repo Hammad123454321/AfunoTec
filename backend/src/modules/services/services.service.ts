@@ -195,6 +195,8 @@ export class ServicesService {
     return {
       ...service,
       tags: service.tags.map((t) => t.tag),
+      basePrice: service.basePrice.toString(),
+      rating: service.rating?.toString() ?? null,
       effectivePrice: price.effectivePrice.toString(),
       discountApplied: price.discountApplied.toString(),
       discountBadge: price.badge,
