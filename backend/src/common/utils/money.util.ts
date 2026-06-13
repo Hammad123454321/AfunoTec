@@ -1,43 +1,68 @@
-import { Prisma } from '@prisma/client';
+import Decimal from 'decimal.js';
+import { Types } from 'mongoose';
 
 /**
- * Monetary helpers built on Prisma.Decimal so money math never touches IEEE-754
- * floats. All amounts are stored as Decimal(18,2) with an explicit currency;
- * conversion happens only at the read boundary via `convert`.
+ * Monetary helpers built on decimal.js so money math never touches IEEE-754
+ * floats. All amounts are stored in MongoDB as BSON `Decimal128` with an
+ * explicit currency; arithmetic happens on `Decimal`, and conversion to/from
+ * `Decimal128` occurs only at the persistence boundary (see `toDecimal128` /
+ * `fromDecimal128`). Conversion between currencies happens at the read boundary
+ * via `convert`.
+ *
+ * NOTE: decimal.js is the same library Prisma's `Decimal` wrapped, so the public
+ * arithmetic API (`plus/minus/times/dividedBy/toDecimalPlaces/ROUND_HALF_UP/
+ * isNegative/isZero`) is unchanged — call sites that did money math are source-
+ * compatible.
  */
 
-export type DecimalInput = Prisma.Decimal | number | string;
+export { Decimal };
 
-export function toDecimal(value: DecimalInput): Prisma.Decimal {
-  return new Prisma.Decimal(value);
+export type DecimalInput = Decimal | Types.Decimal128 | number | string;
+
+/** Normalizes any supported input (incl. BSON Decimal128) into a decimal.js value. */
+export function toDecimal(value: DecimalInput): Decimal {
+  if (value instanceof Types.Decimal128) {
+    return new Decimal(value.toString());
+  }
+  return new Decimal(value as Decimal.Value);
 }
 
-export function add(a: DecimalInput, b: DecimalInput): Prisma.Decimal {
+/** Converts a decimal value into a BSON `Decimal128` for persistence (2dp). */
+export function toDecimal128(value: DecimalInput): Types.Decimal128 {
+  return Types.Decimal128.fromString(round2(value).toFixed(2));
+}
+
+/** Reads a stored `Decimal128` (or null) back into a decimal.js value (or null). */
+export function fromDecimal128(value: Types.Decimal128 | null | undefined): Decimal | null {
+  return value == null ? null : new Decimal(value.toString());
+}
+
+export function add(a: DecimalInput, b: DecimalInput): Decimal {
   return toDecimal(a).plus(toDecimal(b));
 }
 
-export function sub(a: DecimalInput, b: DecimalInput): Prisma.Decimal {
+export function sub(a: DecimalInput, b: DecimalInput): Decimal {
   return toDecimal(a).minus(toDecimal(b));
 }
 
-export function mul(a: DecimalInput, b: DecimalInput): Prisma.Decimal {
+export function mul(a: DecimalInput, b: DecimalInput): Decimal {
   return toDecimal(a).times(toDecimal(b));
 }
 
 /** Sums a list of amounts, starting from zero. */
-export function sum(values: DecimalInput[]): Prisma.Decimal {
-  return values.reduce<Prisma.Decimal>((acc, v) => acc.plus(toDecimal(v)), new Prisma.Decimal(0));
+export function sum(values: DecimalInput[]): Decimal {
+  return values.reduce<Decimal>((acc, v) => acc.plus(toDecimal(v)), new Decimal(0));
 }
 
 /** Rounds to 2 decimal places (half-up) for storage/display. */
-export function round2(value: DecimalInput): Prisma.Decimal {
-  return toDecimal(value).toDecimalPlaces(2, Prisma.Decimal.ROUND_HALF_UP);
+export function round2(value: DecimalInput): Decimal {
+  return toDecimal(value).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
 }
 
 /** Clamps a value to be at least zero (e.g. so a discount can't make a total negative). */
-export function clampNonNegative(value: DecimalInput): Prisma.Decimal {
+export function clampNonNegative(value: DecimalInput): Decimal {
   const d = toDecimal(value);
-  return d.isNegative() ? new Prisma.Decimal(0) : d;
+  return d.isNegative() ? new Decimal(0) : d;
 }
 
 /**
@@ -49,7 +74,7 @@ export function convert(
   amount: DecimalInput,
   fromRateToMga: DecimalInput,
   toRateToMga: DecimalInput,
-): Prisma.Decimal {
+): Decimal {
   const from = toDecimal(fromRateToMga);
   const to = toDecimal(toRateToMga);
   if (to.isZero()) {

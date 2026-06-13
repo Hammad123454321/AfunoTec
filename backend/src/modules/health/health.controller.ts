@@ -1,12 +1,13 @@
 import { Controller, Get } from '@nestjs/common';
+import { InjectConnection } from '@nestjs/mongoose';
 import { ApiTags } from '@nestjs/swagger';
+import { Connection } from 'mongoose';
 import { Public } from '../../common/decorators/public.decorator';
-import { PrismaService } from '../../common/prisma/prisma.service';
 
 @ApiTags('health')
 @Controller('health')
 export class HealthController {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(@InjectConnection() private readonly connection: Connection) {}
 
   @Get()
   @Public()
@@ -19,8 +20,8 @@ export class HealthController {
   async readiness(): Promise<{ status: string; db: boolean }> {
     let db = false;
     try {
-      await this.prisma.$queryRaw`SELECT 1`;
-      db = true;
+      await this.connection.db?.admin().ping();
+      db = this.connection.readyState === 1;
     } catch {
       db = false;
     }

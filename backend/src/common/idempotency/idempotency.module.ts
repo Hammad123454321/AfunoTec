@@ -1,7 +1,12 @@
 import { Global, Module } from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
+import { MongooseModule } from '@nestjs/mongoose';
 import { IdempotencyService } from './idempotency.service';
 import { IdempotencyInterceptor } from './idempotency.interceptor';
+import {
+  IdempotencyKey,
+  IdempotencyKeySchema,
+} from '../../database/schemas/idempotency-key.schema';
 
 /**
  * Provides the durable idempotency store and registers the interceptor that
@@ -10,6 +15,11 @@ import { IdempotencyInterceptor } from './idempotency.interceptor';
  */
 @Global()
 @Module({
+  imports: [
+    MongooseModule.forFeature([
+      { name: IdempotencyKey.name, schema: IdempotencyKeySchema },
+    ]),
+  ],
   providers: [
     IdempotencyService,
     { provide: APP_INTERCEPTOR, useClass: IdempotencyInterceptor },

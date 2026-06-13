@@ -1,4 +1,8 @@
 import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
+import { Booking, BookingSchema } from '../../database/schemas/booking.schema';
+import { Review, ReviewSchema } from '../../database/schemas/review.schema';
+import { Service, ServiceSchema } from '../../database/schemas/service.schema';
 import { ReviewsController, ServiceReviewsController } from './reviews.controller';
 import { ReviewsService } from './reviews.service';
 
@@ -8,6 +12,13 @@ import { ReviewsService } from './reviews.service';
  * aggregates are recomputed transactionally on every change.
  */
 @Module({
+  imports: [
+    MongooseModule.forFeature([
+      { name: Review.name, schema: ReviewSchema },
+      { name: Service.name, schema: ServiceSchema },
+      { name: Booking.name, schema: BookingSchema },
+    ]),
+  ],
   controllers: [ServiceReviewsController, ReviewsController],
   providers: [ReviewsService],
   exports: [ReviewsService],

@@ -1,5 +1,7 @@
 import { Global, Module } from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
+import { MongooseModule } from '@nestjs/mongoose';
+import { AuditLog, AuditLogSchema } from '../../database/schemas/audit-log.schema';
 import { AuditService } from '../../common/audit/audit.service';
 import { AuditInterceptor } from '../../common/audit/audit.interceptor';
 
@@ -10,6 +12,7 @@ import { AuditInterceptor } from '../../common/audit/audit.interceptor';
  */
 @Global()
 @Module({
+  imports: [MongooseModule.forFeature([{ name: AuditLog.name, schema: AuditLogSchema }])],
   providers: [
     AuditService,
     { provide: APP_INTERCEPTOR, useClass: AuditInterceptor },

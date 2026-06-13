@@ -14,7 +14,8 @@ import { mailConfig } from './config/mail.config';
 import { paymentsConfig } from './config/payments.config';
 import { fxConfig } from './config/fx.config';
 
-import { PrismaModule } from './common/prisma/prisma.module';
+import { DatabaseModule } from './database/database.module';
+import { OwnershipModelsModule } from './common/guards/ownership-models.module';
 import { AuthCoreModule } from './common/auth-core/auth-core.module';
 import { AppCacheModule } from './common/cache/app-cache.module';
 import { IdempotencyModule } from './common/idempotency/idempotency.module';
@@ -87,7 +88,8 @@ import { AiModule } from './modules/ai/ai.module';
     ScheduleModule.forRoot(),
 
     // Cross-cutting
-    PrismaModule,
+    DatabaseModule,
+    OwnershipModelsModule,
     AuthCoreModule,
     AppCacheModule,
     IdempotencyModule,

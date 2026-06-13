@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { OtpPurpose } from '@prisma/client';
+import { OtpPurpose } from '../../../common/enums';
 import { IsEnum, IsString, Length, MaxLength } from 'class-validator';
 
 export class SendOtpDto {

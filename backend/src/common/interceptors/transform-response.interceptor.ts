@@ -41,6 +41,10 @@ export class TransformResponseInterceptor implements NestInterceptor {
             message = p.message;
             data = p.data ?? null;
             if (p.meta && typeof p.meta === 'object') meta = p.meta as Record<string, unknown>;
+          } else if ('data' in p) {
+            // Service returns { data, meta? } without a message — unwrap directly.
+            data = p.data ?? null;
+            if (p.meta && typeof p.meta === 'object') meta = p.meta as Record<string, unknown>;
           }
         }
 

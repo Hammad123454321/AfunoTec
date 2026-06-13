@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { DiscountBadge, DiscountType } from '@prisma/client';
+import { DiscountBadge, DiscountType } from '../../../common/enums';
 import {
   IsBoolean,
   IsDateString,

@@ -1,19 +1,17 @@
-import { Prisma, ServiceDiscount } from '@prisma/client';
-import { ServicePricingService } from './service-pricing.service';
+import { Types } from 'mongoose';
+import { DiscountType } from '../../common/enums';
+import { ServicePricingService, PricingDiscount } from './service-pricing.service';
 
-function discount(overrides: Partial<ServiceDiscount> = {}): ServiceDiscount {
+function discount(overrides: Partial<PricingDiscount> = {}): PricingDiscount {
   return {
-    id: 'd1',
-    serviceId: 's1',
-    type: 'PERCENTAGE',
-    value: new Prisma.Decimal(10),
+    type: DiscountType.PERCENTAGE,
+    value: Types.Decimal128.fromString('10'),
     badge: 'SAVE_PERCENT',
     startAt: new Date('2026-01-01'),
     endAt: new Date('2027-01-01'),
     isActive: true,
-    createdAt: new Date(),
     ...overrides,
-  } as ServiceDiscount;
+  };
 }
 
 describe('ServicePricingService', () => {
@@ -35,7 +33,13 @@ describe('ServicePricingService', () => {
   it('applies a fixed discount', () => {
     const r = pricing.compute({
       basePrice: 200000,
-      discounts: [discount({ type: 'FIXED', value: new Prisma.Decimal(50000), badge: 'SAVE_VALUE' })],
+      discounts: [
+        discount({
+          type: DiscountType.FIXED,
+          value: Types.Decimal128.fromString('50000'),
+          badge: 'SAVE_VALUE',
+        }),
+      ],
       onDate,
     });
     expect(r.effectivePrice.toString()).toBe('150000');
@@ -64,8 +68,8 @@ describe('ServicePricingService', () => {
     const r = pricing.compute({
       basePrice: 200000,
       discounts: [
-        discount({ id: 'a', value: new Prisma.Decimal(10) }), // -20000
-        discount({ id: 'b', type: 'FIXED', value: new Prisma.Decimal(50000) }), // -50000
+        discount({ value: Types.Decimal128.fromString('10') }), // -20000
+        discount({ type: DiscountType.FIXED, value: Types.Decimal128.fromString('50000') }), // -50000
       ],
       onDate,
     });
@@ -75,7 +79,7 @@ describe('ServicePricingService', () => {
   it('never goes below zero', () => {
     const r = pricing.compute({
       basePrice: 100,
-      discounts: [discount({ type: 'FIXED', value: new Prisma.Decimal(99999) })],
+      discounts: [discount({ type: DiscountType.FIXED, value: Types.Decimal128.fromString('99999') })],
       onDate,
     });
     expect(r.effectivePrice.toString()).toBe('0');

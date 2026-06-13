@@ -1,16 +1,23 @@
 # =============================================================================
 #  ameer_nasr — single docker-compose for local dev AND production VPS.
 #
+#  Database: MongoDB Atlas (managed). The backend connects via MONGODB_URI;
+#  there is no database container in production. For fully-offline local dev a
+#  local single-node replica-set `mongo` service is provided (commented out by
+#  default — uncomment it and point MONGODB_URI at it if you don't want to use
+#  Atlas). A replica set is required for multi-document transactions.
+#
 #  Local development
 #  -----------------
-#    Only start the data services and run the apps on your host:
-#        docker compose up -d postgres redis
+#    Start Redis only and run the apps on your host (DB = Atlas):
+#        docker compose up -d redis
 #        cd backend  && npm run start:dev
 #        cd frontend/-ameer_nasr-frontend-main && pnpm dev
 #
 #  Production VPS
 #  --------------
-#    A real .env at the repo root supplies the prod values. Then:
+#    A real .env at the repo root supplies the prod values (incl. MONGODB_URI).
+#    Then:
 #        docker compose up -d --build
 #    Host nginx + certbot proxy 80/443 → the 127.0.0.1 ports below.
 #
@@ -19,23 +26,25 @@
 # =============================================================================
 
 services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: ameer_nasr_postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-ameer}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ameer}
-      POSTGRES_DB: ${POSTGRES_DB:-ameer_nasr}
-    ports:
-      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ameer} -d ${POSTGRES_DB:-ameer_nasr}"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
+  # ---- Optional local MongoDB (single-node replica set) for offline dev ----
+  # Uncomment to run Mongo locally instead of Atlas, then set
+  #   MONGODB_URI=mongodb://mongo:27017/ameer_nasr?replicaSet=rs0
+  # mongo:
+  #   image: mongo:7
+  #   container_name: ameer_nasr_mongo
+  #   restart: unless-stopped
+  #   command: ["--replSet", "rs0", "--bind_ip_all"]
+  #   ports:
+  #     - "127.0.0.1:${MONGO_PORT:-27017}:27017"
+  #   volumes:
+  #     - mongo_data:/data/db
+  #   healthcheck:
+  #     test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+  #     interval: 5s
+  #     timeout: 5s
+  #     retries: 10
+  #   # One-time replica-set init (run once after first start):
+  #   #   docker exec ameer_nasr_mongo mongosh --eval "rs.initiate()"
 
   redis:
     image: redis:7-alpine
@@ -59,8 +68,6 @@ services:
     container_name: ameer_nasr_backend
     restart: unless-stopped
     depends_on:
-      postgres:
-        condition: service_healthy
       redis:
         condition: service_healthy
     environment:
@@ -68,7 +75,9 @@ services:
       APP_PORT: 4000
       APP_HOST: 0.0.0.0
       APP_CORS_ORIGINS: ${APP_CORS_ORIGINS:-https://baodeals.com,https://www.baodeals.com}
-      DATABASE_URL: postgresql://${POSTGRES_USER:-ameer}:${POSTGRES_PASSWORD:-ameer}@postgres:5432/${POSTGRES_DB:-ameer_nasr}?schema=public
+      # MongoDB Atlas connection (percent-encode reserved chars in the password).
+      MONGODB_URI: ${MONGODB_URI}
+      MONGODB_DB_NAME: ${MONGODB_DB_NAME:-ameer_nasr}
       REDIS_HOST: redis
       REDIS_PORT: 6379
       JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-dev-access-secret}
@@ -107,6 +116,20 @@ services:
     ports:
       - "${FRONTEND_BIND:-127.0.0.1:3000}:3000"
 
+  # ---- Optional Mongo web UI for local browsing (use Compass against Atlas
+  #      in practice). Enable with: docker compose --profile tools up -d ----
+  mongo-express:
+    image: mongo-express:1
+    container_name: ameer_nasr_mongo_express
+    restart: unless-stopped
+    profiles: ["tools"]
+    environment:
+      ME_CONFIG_MONGODB_URL: ${MONGODB_URI}
+      ME_CONFIG_BASICAUTH_USERNAME: ${MONGO_EXPRESS_USER:-admin}
+      ME_CONFIG_BASICAUTH_PASSWORD: ${MONGO_EXPRESS_PASSWORD:-admin}
+    ports:
+      - "127.0.0.1:${MONGO_EXPRESS_PORT:-8081}:8081"
+
 volumes:
-  postgres_data:
   redis_data:
+  # mongo_data:   # uncomment alongside the optional `mongo` service above

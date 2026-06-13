@@ -5,7 +5,7 @@ REST + WebSocket API for the ameer_nasr (AfunoTec) Madagascar intermediary booki
 ## Stack
 
 - **NestJS 11** (TypeScript) — modular architecture, DI, OpenAPI, WebSockets
-- **PostgreSQL 16** via **Prisma ORM**
+- **MongoDB** (Atlas) via **Mongoose 8** ODM — Decimal128 money, session transactions
 - **Redis 7** for BullMQ background jobs + cache
 - **JWT** auth (access + refresh, DB-backed rotation)
 - **Argon2** password hashing
@@ -17,27 +17,29 @@ REST + WebSocket API for the ameer_nasr (AfunoTec) Madagascar intermediary booki
 ## Quick start (local dev)
 
 ```bash
-# 1. Bring up Postgres + Redis (from project root)
+# 1. Bring up Redis (from project root). The database is MongoDB Atlas —
+#    no local DB container needed (set MONGODB_URI in .env).
 cd ..
-docker compose up -d postgres redis
+docker compose up -d redis
 
 # 2. Install backend deps
 cd backend
 npm install
 
-# 3. Copy env
+# 3. Copy env and set MONGODB_URI to your Atlas connection string
+#    (percent-encode reserved characters in the password).
 cp .env.example .env
 
-# 4. Generate Prisma client + run migrations
-npm run prisma:generate
-npm run prisma:migrate:dev -- --name init
-
-# 5. Seed default admin + categories + currencies
+# 4. Seed default admin + categories + currencies
 npm run db:seed
 
-# 6. Start the API
+# 5. Start the API
 npm run start:dev
 ```
+
+> Mongoose creates collections and indexes on first use (`autoIndex` is on
+> outside production); there is no migration step. A replica set (Atlas provides
+> one) is required for the multi-document transactions used by bookings/payments.
 
 API is at `http://localhost:4000/api/v1`, Swagger at `http://localhost:4000/api/docs`.
 
@@ -48,11 +50,15 @@ src/
   config/                 # typed env config (registerAs)
   common/
     decorators/           # @CurrentUser, @Roles, @Public
-    filters/              # GlobalHttpExceptionFilter, PrismaExceptionFilter
-    guards/               # JwtAuthGuard, RolesGuard
+    filters/              # GlobalHttpExceptionFilter, MongoExceptionFilter
+    guards/               # JwtAuthGuard, RolesGuard, OwnershipGuard
     interceptors/         # TransformResponseInterceptor (envelope shape)
-    prisma/               # PrismaService + global PrismaModule
-    utils/                # pagination, referenceCode
+    utils/                # money (Decimal128), pagination, referenceCode
+  database/
+    database.module.ts    # MongooseModule.forRootAsync (Atlas connection)
+    transaction.service.ts# session-based withTransaction helper
+    schemas/              # all Mongoose @Schema definitions
+    seed.ts               # admin, categories, currencies
   modules/
     health/               # /health, /health/ready (public)
     auth/                 # login, register, refresh, OTP, password reset
@@ -75,9 +81,6 @@ src/
     i18n/                 # admin-editable strings + currency rates
     audit/                # audit log
     ai/                   # PLACEHOLDER — returns 501 until specced
-prisma/
-  schema.prisma           # full ERD
-  seed.ts                 # admin, categories, currencies
 ```
 
 ## Conventions
@@ -87,7 +90,8 @@ prisma/
   { "success": true, "statusCode": 200, "message": "...", "data": <T>, "meta": {...} }
   ```
 - Errors share a similar envelope (see `GlobalHttpExceptionFilter`).
-- Monetary fields are `Decimal(18,2)` with a sibling `currency` (ISO 4217).
+- Monetary fields are BSON `Decimal128` with a sibling `currency` (ISO 4217);
+  all money math goes through `common/utils/money.util` (decimal.js, no floats).
 - All admin mutations write to `AuditLog`.
 - All `POST /bookings` and `POST /payments/*` accept an `Idempotency-Key` header.
 
@@ -100,5 +104,4 @@ prisma/
 | `npm run lint` | ESLint + Prettier |
 | `npm run test` | Jest unit tests |
 | `npm run test:e2e` | End-to-end tests |
-| `npm run prisma:migrate:dev` | Create + apply a new migration |
-| `npm run db:seed` | Seed initial data |
+| `npm run db:seed` | Seed initial data (admin, categories, currencies) |

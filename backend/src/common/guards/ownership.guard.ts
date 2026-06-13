@@ -6,7 +6,16 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { PrismaService } from '../prisma/prisma.service';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Service, ServiceDocument } from '../../database/schemas/service.schema';
+import {
+  ServiceProviderProfile,
+  ServiceProviderProfileDocument,
+} from '../../database/schemas/service-provider-profile.schema';
+import { Review, ReviewDocument } from '../../database/schemas/review.schema';
+import { Booking, BookingDocument } from '../../database/schemas/booking.schema';
+import { Cart, CartDocument } from '../../database/schemas/cart.schema';
 import { AuthUser } from '../decorators/current-user.decorator';
 import {
   OWNS_RESOURCE_KEY,
@@ -25,7 +34,12 @@ const PRIVILEGED_ROLES = new Set(['ADMIN', 'MANAGER']);
 export class OwnershipGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
-    private readonly prisma: PrismaService,
+    @InjectModel(Service.name) private readonly serviceModel: Model<ServiceDocument>,
+    @InjectModel(ServiceProviderProfile.name)
+    private readonly providerModel: Model<ServiceProviderProfileDocument>,
+    @InjectModel(Review.name) private readonly reviewModel: Model<ReviewDocument>,
+    @InjectModel(Booking.name) private readonly bookingModel: Model<BookingDocument>,
+    @InjectModel(Cart.name) private readonly cartModel: Model<CartDocument>,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -58,32 +72,44 @@ export class OwnershipGuard implements CanActivate {
   ): Promise<string | null> {
     switch (options.model) {
       case 'service': {
-        const service = await this.prisma.service.findUnique({
-          where: { id: resourceId },
-          select: { provider: { select: { userId: true } } },
-        });
-        return service?.provider?.userId ?? null;
+        // Service → ServiceProviderProfile → userId (two-hop ownership).
+        const service = await this.serviceModel
+          .findById(resourceId)
+          .select({ providerId: 1 })
+          .lean()
+          .exec();
+        if (!service) return null;
+        const provider = await this.providerModel
+          .findById(service.providerId)
+          .select({ userId: 1 })
+          .lean()
+          .exec();
+        return provider?.userId?.toString() ?? null;
       }
       case 'review': {
-        const review = await this.prisma.review.findUnique({
-          where: { id: resourceId },
-          select: { authorId: true },
-        });
-        return review?.authorId ?? null;
+        const review = await this.reviewModel
+          .findById(resourceId)
+          .select({ authorId: 1 })
+          .lean()
+          .exec();
+        return review?.authorId?.toString() ?? null;
       }
       case 'booking': {
-        const booking = await this.prisma.booking.findUnique({
-          where: { id: resourceId },
-          select: { customerId: true },
-        });
-        return booking?.customerId ?? null;
+        const booking = await this.bookingModel
+          .findById(resourceId)
+          .select({ customerId: 1 })
+          .lean()
+          .exec();
+        return booking?.customerId?.toString() ?? null;
       }
       case 'cartItem': {
-        const item = await this.prisma.cartItem.findUnique({
-          where: { id: resourceId },
-          select: { cart: { select: { userId: true } } },
-        });
-        return item?.cart?.userId ?? null;
+        // CartItem is an embedded subdoc; find the owning cart by items._id.
+        const cart = await this.cartModel
+          .findOne({ 'items._id': resourceId })
+          .select({ userId: 1 })
+          .lean()
+          .exec();
+        return cart?.userId?.toString() ?? null;
       }
       default:
         return null;

@@ -11,6 +11,13 @@ import {
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { Request, Response } from 'express';
+
+// Per-route throttle limits are configurable via env vars so test environments
+// can raise the cap (AUTH_THROTTLE_LIMIT=10000) without touching production defaults.
+const authThrottleLimit = (): number =>
+  parseInt(process.env.AUTH_THROTTLE_LIMIT ?? '5', 10);
+const authThrottleTtl = (): number =>
+  parseInt(process.env.AUTH_THROTTLE_TTL ?? '60000', 10);
 import { Public } from '../../common/decorators/public.decorator';
 import { CurrentUser, AuthUser } from '../../common/decorators/current-user.decorator';
 import { AuthService, RequestContext } from './auth.service';
@@ -55,7 +62,7 @@ export class AuthController {
 
   @Post('register')
   @Public()
-  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @Throttle({ default: { limit: authThrottleLimit(), ttl: authThrottleTtl() } })
   @ApiOperation({ summary: 'Register a new customer account' })
   async register(
     @Body() dto: RegisterDto,
@@ -70,7 +77,7 @@ export class AuthController {
   @Post('login')
   @Public()
   @HttpCode(HttpStatus.OK)
-  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @Throttle({ default: { limit: authThrottleLimit(), ttl: authThrottleTtl() } })
   @ApiOperation({ summary: 'Authenticate and receive access + refresh tokens' })
   async login(
     @Body() dto: LoginDto,
@@ -85,7 +92,7 @@ export class AuthController {
   @Post('refresh')
   @Public()
   @HttpCode(HttpStatus.OK)
-  @Throttle({ default: { limit: 20, ttl: 60_000 } })
+  @Throttle({ default: { limit: authThrottleLimit(), ttl: authThrottleTtl() } })
   @ApiOperation({ summary: 'Rotate the refresh token and issue a new token pair' })
   async refresh(
     @Body() dto: RefreshDto,
@@ -113,7 +120,7 @@ export class AuthController {
   @Post('forgot-password')
   @Public()
   @HttpCode(HttpStatus.OK)
-  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @Throttle({ default: { limit: authThrottleLimit(), ttl: authThrottleTtl() } })
   @ApiOperation({ summary: 'Request a password-reset code (always returns 200)' })
   async forgotPassword(@Body() dto: ForgotPasswordDto) {
     await this.auth.forgotPassword(dto.email);
@@ -123,7 +130,7 @@ export class AuthController {
   @Post('reset-password')
   @Public()
   @HttpCode(HttpStatus.OK)
-  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @Throttle({ default: { limit: authThrottleLimit(), ttl: authThrottleTtl() } })
   @ApiOperation({ summary: 'Reset password using an emailed code' })
   async resetPassword(@Body() dto: ResetPasswordDto) {
     await this.auth.resetPassword(dto);
@@ -145,7 +152,7 @@ export class AuthController {
   @Post('otp/send')
   @Public()
   @HttpCode(HttpStatus.OK)
-  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @Throttle({ default: { limit: authThrottleLimit(), ttl: authThrottleTtl() } })
   @ApiOperation({ summary: 'Send (or resend) an OTP for the given identifier and purpose' })
   async sendOtp(@Body() dto: SendOtpDto) {
     await this.auth.sendOtp(dto);
@@ -155,7 +162,7 @@ export class AuthController {
   @Post('otp/verify')
   @Public()
   @HttpCode(HttpStatus.OK)
-  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  @Throttle({ default: { limit: authThrottleLimit(), ttl: authThrottleTtl() } })
   @ApiOperation({ summary: 'Verify an OTP' })
   async verifyOtp(@Body() dto: VerifyOtpDto) {
     await this.auth.verifyOtp(dto);

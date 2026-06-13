@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ServiceStatus } from '@prisma/client';
+import { ServiceStatus } from '../../../common/enums';
 import { IsEnum } from 'class-validator';
 
 export class UpdateStatusDto {

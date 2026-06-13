@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { CategoryType } from '@prisma/client';
+import { CategoryType } from '../../../common/enums';
 import {
   IsBoolean,
   IsEnum,

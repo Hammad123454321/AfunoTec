@@ -1,9 +1,11 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { InjectModel } from '@nestjs/mongoose';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { Request } from 'express';
-import { PrismaService } from '../prisma/prisma.service';
+import { Model } from 'mongoose';
+import { User, UserDocument } from '../../database/schemas/user.schema';
 import { AuthUser } from '../decorators/current-user.decorator';
 
 export interface JwtPayload {
@@ -23,7 +25,7 @@ function cookieExtractor(req: Request): string | null {
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(
     config: ConfigService,
-    private readonly prisma: PrismaService,
+    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
@@ -36,15 +38,16 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   }
 
   async validate(payload: JwtPayload): Promise<AuthUser> {
-    const user = await this.prisma.user.findUnique({
-      where: { id: payload.sub },
-      select: { id: true, email: true, role: true, isActive: true, deletedAt: true },
-    });
+    const user = await this.userModel
+      .findById(payload.sub)
+      .select({ email: 1, role: 1, isActive: 1, deletedAt: 1 })
+      .lean()
+      .exec();
 
     if (!user || user.deletedAt || !user.isActive) {
       throw new UnauthorizedException('Account is inactive or no longer exists');
     }
 
-    return { id: user.id, email: user.email, role: user.role };
+    return { id: user._id.toString(), email: user.email, role: user.role };
   }
 }

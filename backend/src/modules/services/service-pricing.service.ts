@@ -1,11 +1,28 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, ServiceDiscount } from '@prisma/client';
-import { clampNonNegative, mul, round2, sub, toDecimal } from '../../common/utils/money.util';
+import {
+  clampNonNegative,
+  Decimal,
+  DecimalInput,
+  mul,
+  round2,
+  sub,
+  toDecimal,
+} from '../../common/utils/money.util';
+
+/** A discount as stored on the embedded Service.discounts array (Decimal128 value). */
+export interface PricingDiscount {
+  type: string;
+  value: DecimalInput;
+  badge?: string | null;
+  startAt: Date;
+  endAt: Date;
+  isActive: boolean;
+}
 
 export interface EffectivePrice {
-  basePrice: Prisma.Decimal;
-  effectivePrice: Prisma.Decimal;
-  discountApplied: Prisma.Decimal;
+  basePrice: Decimal;
+  effectivePrice: Decimal;
+  discountApplied: Decimal;
   badge: string | null;
 }
 
@@ -19,10 +36,10 @@ export interface EffectivePrice {
 export class ServicePricingService {
   /** Picks the discount that yields the largest reduction among those active on `onDate`. */
   bestActiveDiscount(
-    discounts: ServiceDiscount[],
-    price: Prisma.Decimal,
+    discounts: PricingDiscount[],
+    price: Decimal,
     onDate: Date,
-  ): { amount: Prisma.Decimal; badge: string | null } {
+  ): { amount: Decimal; badge: string | null } {
     let best = { amount: toDecimal(0), badge: null as string | null };
     for (const d of discounts) {
       if (!d.isActive) continue;
@@ -39,9 +56,9 @@ export class ServicePricingService {
   }
 
   compute(params: {
-    basePrice: Prisma.Decimal | number | string;
-    priceOverride?: Prisma.Decimal | number | string | null;
-    discounts?: ServiceDiscount[];
+    basePrice: DecimalInput;
+    priceOverride?: DecimalInput | null;
+    discounts?: PricingDiscount[];
     onDate?: Date;
   }): EffectivePrice {
     const base = toDecimal(params.basePrice);

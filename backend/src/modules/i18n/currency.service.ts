@@ -2,16 +2,31 @@ import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { ConfigService } from '@nestjs/config';
 import { Cron } from '@nestjs/schedule';
+import { InjectModel } from '@nestjs/mongoose';
 import { Cache } from 'cache-manager';
-import { Currency, Prisma } from '@prisma/client';
-import { PrismaService } from '../../common/prisma/prisma.service';
+import { Model } from 'mongoose';
+import { Currency, CurrencyDocument } from '../../database/schemas/currency.schema';
+import { toDecimal, toDecimal128 } from '../../common/utils/money.util';
 import { FxProviderService } from './fx-provider.service';
 import { UpdateCurrencyDto } from './dto/update-currency.dto';
 
 const CACHE_KEY = 'currencies:active';
 
-export interface CurrencyView extends Omit<Currency, 'rateToMga'> {
+export interface CurrencyView {
+  code: string;
+  name: string;
+  symbol: string;
   rateToMga: string;
+  isActive: boolean;
+}
+
+/** Lean/plain shape of a stored currency (the ISO code is the `_id`). */
+interface CurrencyRow {
+  _id: string;
+  name: string;
+  symbol: string;
+  rateToMga: unknown;
+  isActive: boolean;
 }
 
 @Injectable()
@@ -19,40 +34,49 @@ export class CurrencyService {
   private readonly logger = new Logger(CurrencyService.name);
 
   constructor(
-    private readonly prisma: PrismaService,
+    @InjectModel(Currency.name) private readonly currencyModel: Model<CurrencyDocument>,
     private readonly fx: FxProviderService,
     private readonly configService: ConfigService,
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
   ) {}
 
-  private serialize(c: Currency): CurrencyView {
-    return { ...c, rateToMga: c.rateToMga.toString() };
+  private serialize(c: CurrencyRow): CurrencyView {
+    return {
+      code: c._id,
+      name: c.name,
+      symbol: c.symbol,
+      rateToMga: toDecimal(c.rateToMga as never).toString(),
+      isActive: c.isActive,
+    };
   }
 
   /** Public, cached list of active currencies. */
   async listActive(): Promise<CurrencyView[]> {
-    const cached = await this.cache.get<Currency[]>(CACHE_KEY);
-    const rows = cached ?? (await this.prisma.currency.findMany({ where: { isActive: true } }));
+    const cached = await this.cache.get<CurrencyRow[]>(CACHE_KEY);
+    const rows =
+      cached ?? (await this.currencyModel.find({ isActive: true }).lean().exec());
     if (!cached) await this.cache.set(CACHE_KEY, rows);
-    return rows.map((c) => this.serialize(c));
+    return (rows as CurrencyRow[]).map((c) => this.serialize(c));
   }
 
   /** Admin manual override of a currency. */
   async update(code: string, dto: UpdateCurrencyDto): Promise<CurrencyView> {
-    const existing = await this.prisma.currency.findUnique({ where: { code } });
+    const existing = await this.currencyModel.findById(code).lean().exec();
     if (!existing) throw new NotFoundException('Currency not found');
 
-    const updated = await this.prisma.currency.update({
-      where: { code },
-      data: {
-        ...(dto.name !== undefined && { name: dto.name }),
-        ...(dto.symbol !== undefined && { symbol: dto.symbol }),
-        ...(dto.rateToMga !== undefined && { rateToMga: new Prisma.Decimal(dto.rateToMga) }),
-        ...(dto.isActive !== undefined && { isActive: dto.isActive }),
-      },
-    });
+    const patch: Record<string, unknown> = {
+      ...(dto.name !== undefined && { name: dto.name }),
+      ...(dto.symbol !== undefined && { symbol: dto.symbol }),
+      ...(dto.rateToMga !== undefined && { rateToMga: toDecimal128(dto.rateToMga) }),
+      ...(dto.isActive !== undefined && { isActive: dto.isActive }),
+    };
+
+    const updated = await this.currencyModel
+      .findByIdAndUpdate(code, { $set: patch }, { new: true })
+      .lean()
+      .exec();
     await this.invalidate();
-    return this.serialize(updated);
+    return this.serialize(updated as unknown as CurrencyRow);
   }
 
   /**
@@ -61,8 +85,8 @@ export class CurrencyService {
    * (MGA) is never overwritten.
    */
   async refresh(): Promise<{ refreshed: number; provider: boolean }> {
-    const currencies = await this.prisma.currency.findMany();
-    const codes = currencies.map((c) => c.code);
+    const currencies = await this.currencyModel.find().lean().exec();
+    const codes = (currencies as CurrencyRow[]).map((c) => c._id);
     const rates = await this.fx.fetchRates(codes);
 
     if (!rates) {
@@ -71,18 +95,17 @@ export class CurrencyService {
     }
 
     const base = this.configService.get<string>('fx.baseCurrency') ?? 'MGA';
-    let refreshed = 0;
-    await this.prisma.$transaction(
-      Object.entries(rates)
-        .filter(([code, rate]) => code !== base && rate > 0)
-        .map(([code, rate]) => {
-          refreshed += 1;
-          return this.prisma.currency.update({
-            where: { code },
-            data: { rateToMga: new Prisma.Decimal(rate) },
-          });
-        }),
+    const updates = Object.entries(rates).filter(
+      ([code, rate]) => code !== base && rate > 0,
     );
+    await Promise.all(
+      updates.map(([code, rate]) =>
+        this.currencyModel
+          .updateOne({ _id: code }, { $set: { rateToMga: toDecimal128(rate) } })
+          .exec(),
+      ),
+    );
+    const refreshed = updates.length;
     await this.invalidate();
     this.logger.log(`Refreshed ${refreshed} currency rate(s)`);
     return { refreshed, provider: true };

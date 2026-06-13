@@ -1,7 +1,11 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { createHash } from 'crypto';
-import { Prisma } from '@prisma/client';
-import { PrismaService } from '../prisma/prisma.service';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import {
+  IdempotencyKey,
+  IdempotencyKeyDocument,
+} from '../../database/schemas/idempotency-key.schema';
 
 export interface StoredResponse {
   statusCode: number;
@@ -15,13 +19,27 @@ export interface BeginResult {
   recordId?: string;
 }
 
+/** Mongo duplicate-key error code (replaces Prisma P2002). */
+const MONGO_DUPLICATE_KEY = 11000;
+
+function isDuplicateKeyError(err: unknown): boolean {
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    (err as { code?: unknown }).code === MONGO_DUPLICATE_KEY
+  );
+}
+
 /**
- * Durable idempotency store backed by the `IdempotencyKey` table. Guarantees
+ * Durable idempotency store backed by the `IdempotencyKey` collection. Guarantees
  * that a (key, user, path) tuple executes its side effects at most once.
  */
 @Injectable()
 export class IdempotencyService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    @InjectModel(IdempotencyKey.name)
+    private readonly idempotencyKeyModel: Model<IdempotencyKeyDocument>,
+  ) {}
 
   /** Stable hash of the request body so replays with a different payload are detected. */
   hashRequest(body: unknown): string {
@@ -44,21 +62,21 @@ export class IdempotencyService {
     const { key, userId, method, path, requestHash } = params;
 
     try {
-      const created = await this.prisma.idempotencyKey.create({
-        data: { key, userId, method, path, requestHash, lockedAt: new Date() },
+      const created = await this.idempotencyKeyModel.create({
+        key,
+        userId,
+        method,
+        path,
+        requestHash,
+        lockedAt: new Date(),
       });
-      return { recordId: created.id };
+      return { recordId: created.id as string };
     } catch (err) {
       // Unique violation → a record for this (key,user,path) already exists.
-      if (
-        err instanceof Prisma.PrismaClientKnownRequestError &&
-        err.code === 'P2002'
-      ) {
-        // userId may be null, so use findFirst (the compound-unique findUnique
-        // input does not accept null for a nullable member).
-        const existing = await this.prisma.idempotencyKey.findFirst({
-          where: { key, userId, path },
-        });
+      if (isDuplicateKeyError(err)) {
+        const existing = await this.idempotencyKeyModel
+          .findOne({ key, userId, path })
+          .exec();
         if (!existing) throw err;
 
         if (existing.requestHash !== requestHash) {
@@ -83,20 +101,22 @@ export class IdempotencyService {
 
   /** Persists the handler's outcome so future replays can be served from the store. */
   async complete(recordId: string, statusCode: number, body: unknown): Promise<void> {
-    await this.prisma.idempotencyKey.update({
-      where: { id: recordId },
-      data: {
-        statusCode,
-        responseBody: (body ?? null) as Prisma.InputJsonValue,
-        completedAt: new Date(),
-      },
-    });
+    await this.idempotencyKeyModel
+      .findByIdAndUpdate(recordId, {
+        $set: {
+          statusCode,
+          responseBody: body ?? null,
+          completedAt: new Date(),
+        },
+      })
+      .exec();
   }
 
   /** Releases a reservation when the handler failed, so the client may retry. */
   async release(recordId: string): Promise<void> {
-    await this.prisma.idempotencyKey
-      .delete({ where: { id: recordId } })
+    await this.idempotencyKeyModel
+      .deleteOne({ _id: recordId })
+      .exec()
       .catch(() => undefined);
   }
 }

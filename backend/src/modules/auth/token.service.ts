@@ -1,10 +1,20 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { InjectModel } from '@nestjs/mongoose';
 import { createHash, randomBytes } from 'crypto';
-import { User } from '@prisma/client';
-import { PrismaService } from '../../common/prisma/prisma.service';
+import { Model } from 'mongoose';
+import {
+  RefreshToken,
+  RefreshTokenDocument,
+} from '../../database/schemas/refresh-token.schema';
+import { User } from '../../database/schemas/user.schema';
+import { UserRole } from '../../common/enums';
+import { TransactionService } from '../../database/transaction.service';
 import { JwtPayload } from '../../common/strategies/jwt.strategy';
+
+/** Minimal user shape needed to mint tokens. */
+type TokenUser = { id: string; email: string; role: UserRole | string };
 
 export interface TokenPair {
   accessToken: string;
@@ -28,14 +38,16 @@ export class TokenService {
   constructor(
     private readonly jwt: JwtService,
     private readonly config: ConfigService,
-    private readonly prisma: PrismaService,
+    @InjectModel(RefreshToken.name)
+    private readonly refreshTokenModel: Model<RefreshTokenDocument>,
+    private readonly tx: TransactionService,
   ) {}
 
   private hashToken(token: string): string {
     return createHash('sha256').update(token).digest('hex');
   }
 
-  private signAccessToken(user: Pick<User, 'id' | 'email' | 'role'>): string {
+  private signAccessToken(user: TokenUser): string {
     const payload: JwtPayload = {
       sub: user.id,
       email: user.email,
@@ -50,7 +62,7 @@ export class TokenService {
 
   /** Issues a fresh access+refresh pair and persists the refresh token hash. */
   async issuePair(
-    user: Pick<User, 'id' | 'email' | 'role'>,
+    user: TokenUser,
     ctx: IssueContext = {},
   ): Promise<TokenPair> {
     const accessTtl = this.config.get<number>('jwt.accessTtl') ?? 900;
@@ -60,14 +72,12 @@ export class TokenService {
     const refreshToken = randomBytes(48).toString('hex');
     const expiresAt = new Date(Date.now() + refreshTtl * 1000);
 
-    await this.prisma.refreshToken.create({
-      data: {
-        userId: user.id,
-        tokenHash: this.hashToken(refreshToken),
-        userAgent: ctx.userAgent ?? null,
-        ip: ctx.ip ?? null,
-        expiresAt,
-      },
+    await this.refreshTokenModel.create({
+      userId: user.id,
+      tokenHash: this.hashToken(refreshToken),
+      userAgent: ctx.userAgent ?? null,
+      ip: ctx.ip ?? null,
+      expiresAt,
     });
 
     return {
@@ -85,18 +95,30 @@ export class TokenService {
    */
   async rotate(presentedToken: string, ctx: IssueContext = {}): Promise<TokenPair> {
     const tokenHash = this.hashToken(presentedToken);
-    const existing = await this.prisma.refreshToken.findUnique({
-      where: { tokenHash },
-      include: { user: { select: { id: true, email: true, role: true, isActive: true, deletedAt: true } } },
-    });
+    const existing = await this.refreshTokenModel
+      .findOne({ tokenHash })
+      .populate<{ userId: { _id: unknown; email: string; role: string; isActive: boolean; deletedAt?: Date | null } }>(
+        'userId',
+        'email role isActive deletedAt',
+      )
+      .exec();
 
     if (!existing) {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
+    const populatedUser = existing.userId as unknown as {
+      _id: unknown;
+      email: string;
+      role: string;
+      isActive: boolean;
+      deletedAt?: Date | null;
+    } | null;
+    const ownerId = populatedUser?._id?.toString();
+
     // Reuse detection: a revoked token being presented means it may be stolen.
     if (existing.revokedAt) {
-      await this.revokeAllForUser(existing.userId);
+      if (ownerId) await this.revokeAllForUser(ownerId);
       throw new UnauthorizedException('Refresh token has been revoked');
     }
 
@@ -104,31 +126,40 @@ export class TokenService {
       throw new UnauthorizedException('Refresh token has expired');
     }
 
-    const user = existing.user;
-    if (!user || user.deletedAt || !user.isActive) {
+    if (!populatedUser || populatedUser.deletedAt || !populatedUser.isActive) {
       throw new UnauthorizedException('Account is inactive or no longer exists');
     }
+
+    const user: TokenUser = {
+      id: ownerId!,
+      email: populatedUser.email,
+      role: populatedUser.role,
+    };
 
     const refreshTtl = this.config.get<number>('jwt.refreshTtl') ?? 604800;
     const accessTtl = this.config.get<number>('jwt.accessTtl') ?? 900;
     const newRefresh = randomBytes(48).toString('hex');
     const newExpiresAt = new Date(Date.now() + refreshTtl * 1000);
 
-    await this.prisma.$transaction([
-      this.prisma.refreshToken.update({
-        where: { id: existing.id },
-        data: { revokedAt: new Date() },
-      }),
-      this.prisma.refreshToken.create({
-        data: {
-          userId: user.id,
-          tokenHash: this.hashToken(newRefresh),
-          userAgent: ctx.userAgent ?? null,
-          ip: ctx.ip ?? null,
-          expiresAt: newExpiresAt,
-        },
-      }),
-    ]);
+    await this.tx.run(async (session) => {
+      await this.refreshTokenModel.updateOne(
+        { _id: existing._id },
+        { $set: { revokedAt: new Date() } },
+        { session },
+      );
+      await this.refreshTokenModel.create(
+        [
+          {
+            userId: user.id,
+            tokenHash: this.hashToken(newRefresh),
+            userAgent: ctx.userAgent ?? null,
+            ip: ctx.ip ?? null,
+            expiresAt: newExpiresAt,
+          },
+        ],
+        { session },
+      );
+    });
 
     return {
       accessToken: this.signAccessToken(user),
@@ -141,17 +172,17 @@ export class TokenService {
   /** Revokes a single refresh token by its raw value (used on logout). */
   async revoke(presentedToken: string): Promise<void> {
     const tokenHash = this.hashToken(presentedToken);
-    await this.prisma.refreshToken.updateMany({
-      where: { tokenHash, revokedAt: null },
-      data: { revokedAt: new Date() },
-    });
+    await this.refreshTokenModel.updateMany(
+      { tokenHash, revokedAt: null },
+      { $set: { revokedAt: new Date() } },
+    );
   }
 
   /** Revokes every active refresh token for a user (password change, theft, deactivation). */
   async revokeAllForUser(userId: string): Promise<void> {
-    await this.prisma.refreshToken.updateMany({
-      where: { userId, revokedAt: null },
-      data: { revokedAt: new Date() },
-    });
+    await this.refreshTokenModel.updateMany(
+      { userId, revokedAt: null },
+      { $set: { revokedAt: new Date() } },
+    );
   }
 }

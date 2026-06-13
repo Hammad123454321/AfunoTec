@@ -1,6 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
-import { PrismaService } from '../../common/prisma/prisma.service';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model, Types } from 'mongoose';
+import {
+  ServiceAvailability,
+  ServiceAvailabilityDocument,
+} from '../../database/schemas/service-availability.schema';
+import { Service, ServiceDocument } from '../../database/schemas/service.schema';
+import { TransactionService } from '../../database/transaction.service';
+import { toDecimal128 } from '../../common/utils/money.util';
 import { BusinessRuleException } from '../../common/errors/business-rule.exception';
 import { OverrideDayDto, SetAvailabilityDto } from './dto/availability.dto';
 
@@ -18,20 +25,28 @@ export interface DayAvailability {
 
 @Injectable()
 export class AvailabilityService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    @InjectModel(ServiceAvailability.name)
+    private readonly availabilityModel: Model<ServiceAvailabilityDocument>,
+    @InjectModel(Service.name)
+    private readonly serviceModel: Model<ServiceDocument>,
+    private readonly tx: TransactionService,
+  ) {}
 
   /** Returns a per-day slice over [from, to], synthesizing defaults for gaps. */
   async range(serviceId: string, from: string, to: string): Promise<DayAvailability[]> {
-    const service = await this.prisma.service.findFirst({
-      where: { id: serviceId, deletedAt: null },
-      select: { id: true, basePrice: true },
-    });
+    const service = await this.serviceModel
+      .findOne({ _id: serviceId, deletedAt: null })
+      .select({ basePrice: 1 })
+      .lean()
+      .exec();
     if (!service) throw new NotFoundException('Service not found');
 
     const days = this.enumerateDays(from, to);
-    const rows = await this.prisma.serviceAvailability.findMany({
-      where: { serviceId, date: { gte: this.toUtcDate(from), lte: this.toUtcDate(to) } },
-    });
+    const rows = await this.availabilityModel
+      .find({ serviceId, date: { $gte: this.toUtcDate(from), $lte: this.toUtcDate(to) } })
+      .lean()
+      .exec();
     const byDate = new Map(rows.map((r) => [this.dateKey(r.date), r]));
 
     return days.map((d) => {
@@ -66,61 +81,73 @@ export class AvailabilityService {
     await this.ensureService(serviceId);
     const days = this.enumerateDays(dto.from, dto.to);
 
-    await this.prisma.$transaction(
-      days.map((d) => {
+    await this.tx.run(async (session) => {
+      for (const d of days) {
         const date = this.toUtcDate(d);
-        const update: Prisma.ServiceAvailabilityUpdateInput = {};
-        const baseCreate = { qtyTotal: 1, qtyReserved: 0, isClosed: false };
-        if (dto.qtyTotal !== undefined) update.qtyTotal = dto.qtyTotal;
-        if (dto.priceOverride !== undefined)
-          update.priceOverride = new Prisma.Decimal(dto.priceOverride);
-        if (dto.isClosed !== undefined) update.isClosed = dto.isClosed;
+        const set: Record<string, unknown> = {};
+        if (dto.qtyTotal !== undefined) set.qtyTotal = dto.qtyTotal;
+        if (dto.priceOverride !== undefined) set.priceOverride = toDecimal128(dto.priceOverride);
+        if (dto.isClosed !== undefined) set.isClosed = dto.isClosed;
 
-        return this.prisma.serviceAvailability.upsert({
-          where: { serviceId_date: { serviceId, date } },
-          update,
-          create: {
-            serviceId,
-            date,
-            qtyTotal: dto.qtyTotal ?? baseCreate.qtyTotal,
-            priceOverride:
-              dto.priceOverride !== undefined ? new Prisma.Decimal(dto.priceOverride) : null,
-            isClosed: dto.isClosed ?? baseCreate.isClosed,
-          },
-        });
-      }),
-    );
+        const setOnInsert: Record<string, unknown> = {
+          serviceId: new Types.ObjectId(serviceId),
+          date,
+          qtyReserved: 0,
+        };
+        if (dto.qtyTotal === undefined) setOnInsert.qtyTotal = 1;
+        if (dto.priceOverride === undefined) setOnInsert.priceOverride = null;
+        if (dto.isClosed === undefined) setOnInsert.isClosed = false;
+
+        await this.availabilityModel.updateOne(
+          { serviceId, date },
+          { $set: set, $setOnInsert: setOnInsert },
+          { upsert: true, session },
+        );
+      }
+    });
     return { updated: days.length };
   }
 
   /** Override a single day. */
-  async overrideDay(serviceId: string, dateStr: string, dto: OverrideDayDto): Promise<DayAvailability> {
+  async overrideDay(
+    serviceId: string,
+    dateStr: string,
+    dto: OverrideDayDto,
+  ): Promise<DayAvailability> {
     await this.ensureService(serviceId);
     const date = this.toUtcDate(dateStr);
 
-    const row = await this.prisma.serviceAvailability.upsert({
-      where: { serviceId_date: { serviceId, date } },
-      update: {
-        ...(dto.qtyTotal !== undefined && { qtyTotal: dto.qtyTotal }),
-        ...(dto.priceOverride !== undefined && {
-          priceOverride: new Prisma.Decimal(dto.priceOverride),
-        }),
-        ...(dto.isClosed !== undefined && { isClosed: dto.isClosed }),
-      },
-      create: {
-        serviceId,
-        date,
-        qtyTotal: dto.qtyTotal ?? 1,
-        priceOverride:
-          dto.priceOverride !== undefined ? new Prisma.Decimal(dto.priceOverride) : null,
-        isClosed: dto.isClosed ?? false,
-      },
-    });
+    const set: Record<string, unknown> = {};
+    if (dto.qtyTotal !== undefined) set.qtyTotal = dto.qtyTotal;
+    if (dto.priceOverride !== undefined) set.priceOverride = toDecimal128(dto.priceOverride);
+    if (dto.isClosed !== undefined) set.isClosed = dto.isClosed;
 
-    const service = await this.prisma.service.findUniqueOrThrow({
-      where: { id: serviceId },
-      select: { basePrice: true },
-    });
+    const setOnInsert: Record<string, unknown> = {
+      serviceId: new Types.ObjectId(serviceId),
+      date,
+      qtyReserved: 0,
+    };
+    if (dto.qtyTotal === undefined) setOnInsert.qtyTotal = 1;
+    if (dto.priceOverride === undefined) setOnInsert.priceOverride = null;
+    if (dto.isClosed === undefined) setOnInsert.isClosed = false;
+
+    const row = await this.availabilityModel
+      .findOneAndUpdate(
+        { serviceId, date },
+        { $set: set, $setOnInsert: setOnInsert },
+        { upsert: true, new: true },
+      )
+      .lean()
+      .exec();
+    if (!row) throw new NotFoundException('Service availability not found');
+
+    const service = await this.serviceModel
+      .findById(serviceId)
+      .select({ basePrice: 1 })
+      .lean()
+      .exec();
+    if (!service) throw new NotFoundException('Service not found');
+
     return {
       date: this.dateKey(row.date),
       qtyTotal: row.qtyTotal,
@@ -135,10 +162,9 @@ export class AvailabilityService {
   // -- Helpers ----------------------------------------------------------------
 
   private async ensureService(serviceId: string): Promise<void> {
-    const found = await this.prisma.service.findFirst({
-      where: { id: serviceId, deletedAt: null },
-      select: { id: true },
-    });
+    const found = await this.serviceModel
+      .exists({ _id: serviceId, deletedAt: null })
+      .then(Boolean);
     if (!found) throw new NotFoundException('Service not found');
   }
 
@@ -161,7 +187,7 @@ export class AvailabilityService {
     return days;
   }
 
-  /** Normalizes a YYYY-MM-DD string to a UTC midnight Date (matches @db.Date). */
+  /** Normalizes a YYYY-MM-DD string to a UTC midnight Date (matches date-only storage). */
   private toUtcDate(s: string): Date {
     return new Date(`${s.slice(0, 10)}T00:00:00.000Z`);
   }

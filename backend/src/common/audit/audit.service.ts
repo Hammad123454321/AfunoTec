@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
-import { PrismaService } from '../prisma/prisma.service';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { AuditLog, AuditLogDocument } from '../../database/schemas/audit-log.schema';
 
 export interface AuditEntry {
   actorId?: string | null;
@@ -20,21 +21,21 @@ export interface AuditEntry {
 export class AuditService {
   private readonly logger = new Logger(AuditService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    @InjectModel(AuditLog.name) private readonly auditLogModel: Model<AuditLogDocument>,
+  ) {}
 
   /** Records an audit entry; never throws. */
   async record(entry: AuditEntry): Promise<void> {
     try {
-      await this.prisma.auditLog.create({
-        data: {
-          actorId: entry.actorId ?? null,
-          action: entry.action,
-          entity: entry.entity,
-          entityId: entry.entityId ?? null,
-          diff: (entry.diff ?? undefined) as Prisma.InputJsonValue | undefined,
-          ip: entry.ip ?? null,
-          userAgent: entry.userAgent ?? null,
-        },
+      await this.auditLogModel.create({
+        actorId: entry.actorId ?? null,
+        action: entry.action,
+        entity: entry.entity,
+        entityId: entry.entityId ?? null,
+        diff: entry.diff ?? undefined,
+        ip: entry.ip ?? null,
+        userAgent: entry.userAgent ?? null,
       });
     } catch (err) {
       this.logger.warn(

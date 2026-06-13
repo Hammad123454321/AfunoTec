@@ -8,7 +8,7 @@ import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { GlobalHttpExceptionFilter } from './common/filters/http-exception.filter';
-import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter';
+import { MongoExceptionFilter } from './common/filters/mongo-exception.filter';
 import { TransformResponseInterceptor } from './common/interceptors/transform-response.interceptor';
 
 async function bootstrap(): Promise<void> {
@@ -49,7 +49,7 @@ async function bootstrap(): Promise<void> {
       transformOptions: { enableImplicitConversion: true },
     }),
   );
-  app.useGlobalFilters(new GlobalHttpExceptionFilter(), new PrismaExceptionFilter());
+  app.useGlobalFilters(new GlobalHttpExceptionFilter(), new MongoExceptionFilter());
   app.useGlobalInterceptors(
     new ClassSerializerInterceptor(app.get(Reflector)),
     new TransformResponseInterceptor(),

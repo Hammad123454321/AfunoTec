@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { InjectModel } from '@nestjs/mongoose';
 import { randomInt } from 'crypto';
-import { OtpPurpose } from '@prisma/client';
-import { PrismaService } from '../../common/prisma/prisma.service';
+import { Model } from 'mongoose';
+import { OtpPurpose } from '../../common/enums';
+import { OtpToken, OtpTokenDocument } from '../../database/schemas/otp-token.schema';
+import { TransactionService } from '../../database/transaction.service';
 import { PasswordService } from './password.service';
 import { BusinessRuleException } from '../../common/errors/business-rule.exception';
 
@@ -19,9 +22,10 @@ export interface IssuedOtp {
 @Injectable()
 export class OtpService {
   constructor(
-    private readonly prisma: PrismaService,
+    @InjectModel(OtpToken.name) private readonly otpModel: Model<OtpTokenDocument>,
     private readonly password: PasswordService,
     private readonly config: ConfigService,
+    private readonly tx: TransactionService,
   ) {}
 
   private generateCode(length: number): string {
@@ -48,22 +52,26 @@ export class OtpService {
     const codeHash = await this.password.hash(code);
     const expiresAt = new Date(Date.now() + ttl * 1000);
 
-    await this.prisma.$transaction([
+    await this.tx.run(async (session) => {
       // Invalidate previous unconsumed codes for this identifier+purpose.
-      this.prisma.otpToken.updateMany({
-        where: { identifier: params.identifier, purpose: params.purpose, consumedAt: null },
-        data: { consumedAt: new Date() },
-      }),
-      this.prisma.otpToken.create({
-        data: {
-          identifier: params.identifier,
-          purpose: params.purpose,
-          userId: params.userId ?? null,
-          codeHash,
-          expiresAt,
-        },
-      }),
-    ]);
+      await this.otpModel.updateMany(
+        { identifier: params.identifier, purpose: params.purpose, consumedAt: null },
+        { $set: { consumedAt: new Date() } },
+        { session },
+      );
+      await this.otpModel.create(
+        [
+          {
+            identifier: params.identifier,
+            purpose: params.purpose,
+            userId: params.userId ?? null,
+            codeHash,
+            expiresAt,
+          },
+        ],
+        { session },
+      );
+    });
 
     return { code, expiresAt };
   }
@@ -79,10 +87,10 @@ export class OtpService {
   }): Promise<void> {
     const maxAttempts = this.config.get<number>('jwt.otpMaxAttempts') ?? 5;
 
-    const token = await this.prisma.otpToken.findFirst({
-      where: { identifier: params.identifier, purpose: params.purpose, consumedAt: null },
-      orderBy: { createdAt: 'desc' },
-    });
+    const token = await this.otpModel
+      .findOne({ identifier: params.identifier, purpose: params.purpose, consumedAt: null })
+      .sort({ createdAt: -1 })
+      .exec();
 
     if (!token) {
       throw new BusinessRuleException('No active verification code; request a new one');
@@ -91,25 +99,16 @@ export class OtpService {
       throw new BusinessRuleException('Verification code has expired; request a new one');
     }
     if (token.attempts >= maxAttempts) {
-      await this.prisma.otpToken.update({
-        where: { id: token.id },
-        data: { consumedAt: new Date() },
-      });
+      await this.otpModel.updateOne({ _id: token._id }, { $set: { consumedAt: new Date() } });
       throw new BusinessRuleException('Too many attempts; request a new code');
     }
 
     const ok = await this.password.verify(token.codeHash, params.code);
     if (!ok) {
-      await this.prisma.otpToken.update({
-        where: { id: token.id },
-        data: { attempts: { increment: 1 } },
-      });
+      await this.otpModel.updateOne({ _id: token._id }, { $inc: { attempts: 1 } });
       throw new BusinessRuleException('Incorrect verification code');
     }
 
-    await this.prisma.otpToken.update({
-      where: { id: token.id },
-      data: { consumedAt: new Date() },
-    });
+    await this.otpModel.updateOne({ _id: token._id }, { $set: { consumedAt: new Date() } });
   }
 }
